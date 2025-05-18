@@ -23,7 +23,7 @@
 - Build complete UI with mock data
 
 ### Tasks:
-- [ ] Message bubble components
+- [x] Message bubble components
 - [ ] Scrollable chat layout
 - [ ] Model selector (searchable, stores selection locally)
 - [ ] Input + send handler using mock API

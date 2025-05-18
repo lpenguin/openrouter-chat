@@ -29,7 +29,7 @@
 - OpenRouter for model completions
 - Supabase for backend data and authentication
 - Node.js + Express backend
-- React + ShadCN + Tailwind CSS frontend
+- React + Radix UI + Tailwind CSS frontend
 - Hosted on Vercel
 
 ---

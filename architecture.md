@@ -4,7 +4,7 @@
 
 ## 🧱 Stack Overview
 
-- **Frontend**: React + ShadCN UI + Tailwind CSS (in `/openrouter-chat-frontend`)
+- **Frontend**: React + Radix UI UI + Tailwind CSS (in `/openrouter-chat-frontend`)
 - **Backend**: Node.js + Express (REST API, in `/openrouter-chat-backend`)
 - **Language**: TypeScript (both frontend and backend)
 - **Monorepo Structure**: Each of `/openrouter-chat-frontend` and `/openrouter-chat-backend` contains its own `src/` and `package.json`

@@ -13,6 +13,43 @@
 - Keep files and folders lowercase with dashes (e.g., `chat-list.tsx`).
 - Group related files in feature folders.
 
+## Frontend Folder Structure
+
+### Recommended Structure
+
+- `src/`
+  - `components/` — All React components (e.g., `chat-input.tsx`, `chat-bubble.tsx`, `chat.tsx`)
+  - `assets/` — Static assets (images, SVGs, etc.)
+  - `hooks/` — Custom React hooks (if any)
+  - `styles/` — CSS or Tailwind files (if separated)
+  - `App.tsx` — Main app entry
+  - `main.tsx` — React root
+  - `index.css` — Global styles
+
+### Naming Conventions
+- Use kebab-case for files and folders (e.g., `use-chat.ts`, `tailwind.css`).
+- Use PascalCase for files in `components/` (e.g., `ChatInput.tsx`, `ChatBubble.tsx`, `Chat.tsx`).
+- Use PascalCase for component names in code.
+- Group related files in feature folders if the app grows.
+
+### Example
+```
+src/
+  components/
+    ChatInput.tsx
+    ChatBubble.tsx
+    Chat.tsx
+  assets/
+    logo.svg
+  hooks/
+    use-chat.ts
+  styles/
+    tailwind.css
+  App.tsx
+  main.tsx
+  index.css
+```
+
 ## Backend
 - Organize code in `/openrouter-chat-backend/src`.
 - Use Express with async/await.
