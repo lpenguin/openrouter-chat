@@ -17,16 +17,27 @@
 
 ---
 
-## 💻 Phase 1: Frontend Development
+## 💻 Phase 1: Core Features (Merged Frontend/Backend)
 
 ### Goals:
-- Build complete UI with mock data
+- Develop essential chat features on both server and client simultaneously
 
 ### Tasks:
+- [ ] OpenRouter OAuth (login screen if user didn't login, logout button)
+- [ ] New chat button
 - [x] Message bubble components
 - [x] Scrollable chat layout
-- [ ] Model selector (searchable, stores selection locally)
-- [ ] Input + send handler using mock API
+- [x] Model selector (searchable, stores selection locally)
+- [ ] Input + send handler (connect to backend, currently only mock API is implemented)
+- [ ] Chat history: select chat from the history, rename/delete entries
+- [ ] Web search integration
+- [ ] Error handling (show errors for failed requests)
+- [ ] Loading/typing indicators (show when assistant is generating a reply)
+- [ ] File attachments:
+    - [ ] Attach files through an attach button
+    - [ ] Paste images directly into the input field
+    - [ ] Drag and drop files/images
+- [ ] User settings (store preferences such as model, theme, etc.)
 
 ---
 
@@ -55,3 +66,8 @@
 - [ ] Add SSE endpoint for assistant stream
 - [ ] Display assistant message as chunks arrive
 - [ ] Handle reload state and wait for completion
+
+---
+
+## General Requirements
+- Responsive design (mobile and desktop support)
