@@ -58,7 +58,7 @@ src/
 
 ## Frontend
 - Organize code in `/openrouter-chat-frontend/src`.
-- Use React + Radix UI + Tailwind CSS.
+- Use React + Headless UI + Tailwind CSS.
 - Use absolute imports from `src/`.
 - Keep components small and focused.
 - Use custom hooks for shared logic.

@@ -24,7 +24,7 @@
 
 ### Tasks:
 - [x] Message bubble components
-- [ ] Scrollable chat layout
+- [x] Scrollable chat layout
 - [ ] Model selector (searchable, stores selection locally)
 - [ ] Input + send handler using mock API
 

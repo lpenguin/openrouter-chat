@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { TextField, Button, Flex } from '@radix-ui/themes';
 
 interface ChatInputProps {
   onSend: (content: string) => void;
@@ -23,23 +22,26 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   };
 
   return (
-    <Flex gap="2" style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: 8, borderTop: '1px solid var(--gray-6, #e5e7eb)', background: 'var(--color-panel, #fff)', alignItems: 'center' }}>
-      <TextField.Root
-        style={{ flex: 1 }}
-        placeholder="Type your message..."
-        value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={disabled}
-      />
-      <Button
-        color="blue"
-        onClick={handleSend}
-        disabled={disabled || !value.trim()}
-      >
-        Send
-      </Button>
-    </Flex>
+    <div className="fixed bottom-0 left-0 w-full pb-4 bg-gradient-to-t from-white via-white/90 to-transparent z-10 flex justify-center">
+      <div className="w-full max-w-2xl flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-lg">
+        <input
+          type="text"
+          className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400 text-base"
+          placeholder="Type your message..."
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+        />
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow"
+          onClick={handleSend}
+          disabled={disabled || !value.trim()}
+        >
+          Send
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Theme, Flex } from '@radix-ui/themes';
 import Chat from './components/Chat';
 import ChatInput from './components/ChatInput'
+import ModelSelector from './components/ModelSelector';
 import type { Message } from './types/chat';
 import { fetchMessages, sendMessage } from './services/chatService';
 
@@ -27,16 +27,17 @@ function App() {
   }
 
   return (
-    <Theme appearance="light" accentColor="blue">
-      <Flex direction="column" style={{ height: '100vh' }}>
-        <Flex direction="column" style={{ flex: 1, minHeight: 0, width: '100%' }}>
-          <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Chat messages={messages} loading={loading} />
-            <ChatInput onSend={handleSend} disabled={loading} />
+    <div className="bg-white text-gray-900 min-h-screen flex flex-col">
+      <div className="flex flex-col flex-1 min-h-0 w-full">
+        <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col">
+          <div className="py-4 self-end">
+            <ModelSelector />
           </div>
-        </Flex>
-      </Flex>
-    </Theme>
+          <Chat messages={messages} loading={loading} />
+          <ChatInput onSend={handleSend} disabled={loading} />
+        </div>
+      </div>
+    </div>
   )
 }
 
