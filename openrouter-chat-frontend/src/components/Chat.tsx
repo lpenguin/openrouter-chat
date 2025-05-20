@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import ModelSelector from './ModelSelector';
+import LogoutButton from './LogoutButton';
 
 interface Message {
   id: number;
@@ -23,10 +24,11 @@ const Chat: React.FC<ChatProps> = ({ messages, loading }) => {
 
   return (
     <div className="flex-1 p-4 bg-gray-50 overflow-auto pb-32" style={{ height: '100vh', boxSizing: 'border-box' }}>
-      <div className="fixed top-0 left-0 w-full z-20 flex items-start bg-gray-50 p-4 border-b border-gray-200">
+      <div className="fixed top-0 left-0 w-full z-20 flex items-start bg-gray-50 p-4 border-b border-gray-200 justify-between">
         <div className="mr-6">
           <ModelSelector />
         </div>
+        <LogoutButton />
       </div>
       <div className="space-y-2 pt-24">
         {messages.map(msg =>

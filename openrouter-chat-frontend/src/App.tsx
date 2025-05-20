@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import AuthGate from './components/AuthGate';
 import Chat from './components/Chat';
 import ChatInput from './components/ChatInput'
 import ModelSelector from './components/ModelSelector';
@@ -27,17 +28,22 @@ function App() {
   }
 
   return (
-    <div className="bg-white text-gray-900 min-h-screen flex flex-col">
-      <div className="flex flex-col flex-1 min-h-0 w-full">
-        <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col">
-          <div className="py-4 self-end">
-            <ModelSelector />
+    <AuthGate>
+      <div className="bg-white text-gray-900 min-h-screen flex flex-col">
+        <div className="flex flex-col flex-1 min-h-0 w-full">
+          <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col">
+            <div className="py-4 self-end">
+              <ModelSelector />
+            </div>
+            <Chat
+              messages={messages}
+              loading={loading}
+            />
+            <ChatInput onSend={handleSend} disabled={loading} />
           </div>
-          <Chat messages={messages} loading={loading} />
-          <ChatInput onSend={handleSend} disabled={loading} />
         </div>
       </div>
-    </div>
+    </AuthGate>
   )
 }
 

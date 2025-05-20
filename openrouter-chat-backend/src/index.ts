@@ -1,10 +1,12 @@
 // Entry point for backend API (TypeScript)
 import express from 'express';
 import cors from 'cors';
+import authApi from './authApi';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api', authApi);
 
 // In-memory message store
 let messages = [

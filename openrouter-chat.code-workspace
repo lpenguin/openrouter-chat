@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "openrouter-chat-backend"
+		},
+		{
+			"path": "openrouter-chat-frontend"
+		},
+		{
+			"path": "docs"
+		}
+	],
+	"settings": {}
+}
