@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import { useAuthStore } from '../store/authStore';
 import { loginApi, registerApi } from '../services/authService';
-import App from '../App';
+import { getUser, setUser, removeUser } from '../services/userService';
+import type { AuthUser } from '../schemas/authUserSchema';
 
 export default function AuthGate({ children }: { children?: React.ReactNode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUserState] = useState<AuthUser | null>(null);
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const setAuthUser = useAuthStore(state => state.setAuthUser);
 
   // Persist user session in localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) setUser(JSON.parse(stored));
-  }, []);
+    const stored = getUser();
+    if (stored) {
+      setAuthUser(stored);
+    } else {
+      setAuthUser(null);
+    }
+  }, [setAuthUser]);
   useEffect(() => {
-    if (user) localStorage.setItem('user', JSON.stringify(user));
-    else localStorage.removeItem('user');
+    if (user) setUser(user);
+    else removeUser();
   }, [user]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,16 +35,13 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
       const data = mode === 'login'
         ? await loginApi(email, password)
         : await registerApi(email, password);
-      setUser({ ...data.user, token: data.token });
+      setUserState(data);
+      setAuthUser(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleLogout() {
-    setUser(null);
   }
 
   if (!user) {

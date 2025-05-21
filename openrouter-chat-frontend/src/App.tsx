@@ -1,25 +1,18 @@
-import AuthGate from './components/AuthGate';
+import { useEffect, useState } from 'react';
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
-import { useEffect, useState } from 'react';
 import type { Message } from './types/chat';
 import { fetchMessages, sendMessage } from './services/chatService';
+import { useAuthStore } from './store/authStore';
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
-  const [userEmail, setUserEmail] = useState<string>('');
+  const authUser = useAuthStore((state) => state.authUser);
 
   useEffect(() => {
     fetchMessages().then(setMessages)
-    // Get user email from localStorage
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      try {
-        const user = JSON.parse(stored);
-        setUserEmail(user.email || '');
-      } catch {}
-    }
+    // No need to set authUser here, handled globally
   }, [])
 
   const handleSend = async (content: string) => {
@@ -36,16 +29,14 @@ function App() {
   }
 
   return (
-    <AuthGate>
       <div className="bg-white text-gray-900 min-h-screen flex flex-row">
-        <Sidebar email={userEmail} />
+        <Sidebar user={authUser?.user!!} />
         <Chat
           messages={messages}
           loading={loading}
           onSend={handleSend}
         />
       </div>
-    </AuthGate>
   )
 }
 
