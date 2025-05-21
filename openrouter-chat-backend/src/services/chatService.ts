@@ -2,10 +2,13 @@ import { db } from '../db';
 import { chats, messages } from '../schema';
 import { eq, desc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+import { getUserSettings } from './settingsService';
 
-export async function createChat({ userId, model }: { userId: number, model: string }) {
+export async function createChat({ userId }: { userId: number }) {
   const now = new Date();
   const chatId = randomUUID();
+  const userSettings = await getUserSettings(userId);
+  const model = userSettings.defaultModel ?? 'openai/gpt-3.5-turbo';
   await db.insert(chats).values({
     id: chatId,
     user_id: userId,
@@ -51,4 +54,10 @@ export async function insertMessage({ chatId, userId, role, content, model, prov
 
 export async function getMessagesForChat(chatId: string) {
   return db.select().from(messages).where(eq(messages.chat_id, chatId)).orderBy(messages.created_at);
+}
+
+export async function setChatModel(chatId: string, model: string) {
+  const now = new Date();
+  await db.update(chats).set({ model, updated_at: now }).where(eq(chats.id, chatId));
+  return { id: chatId, model, updated_at: now };
 }

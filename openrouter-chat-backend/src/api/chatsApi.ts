@@ -1,16 +1,17 @@
 import { Router } from 'express';
-import { authMiddleware } from './services/authMiddleware';
+import { authMiddleware } from '../services/authMiddleware';
 import { z } from 'zod';
-import { createChatSchema, postMessageSchema } from './chatsSchema';
-import { getOpenRouterCompletion, ChatMessage } from './services/openrouterService';
-import { getUserSettings } from './services/settingsService';
+import { postMessageSchema } from '../chatsSchema';
+import { getOpenRouterCompletion, ChatMessage } from '../services/openrouterService';
+import { getUserSettings } from '../services/settingsService';
 import {
   createChat,
   listChats,
   getChatById,
   insertMessage,
-  getMessagesForChat
-} from './services/chatService';
+  getMessagesForChat,
+  setChatModel,
+} from '../services/chatService';
 
 const router = Router();
 
@@ -18,13 +19,8 @@ const router = Router();
 router.post('/chats', authMiddleware, async (req, res): Promise<void> => {
   // @ts-ignore
   const user = req.user;
-  const parseResult = createChatSchema.safeParse(req.body);
-  if (!parseResult.success) {
-    res.status(400).json({ error: parseResult.error.errors[0].message });
-    return;
-  }
-  const { model } = parseResult.data;
-  const chat = await createChat({ userId: user.id, model });
+
+  const chat = await createChat({ userId: user.id });
   res.json({ chat });
 });
 
@@ -46,7 +42,8 @@ router.post('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<vo
     res.status(400).json({ error: parseResult.error.errors[0].message });
     return;
   }
-  const { content, provider, model } = parseResult.data;
+  const { content, model } = parseResult.data;
+  const provider = 'openrouter';
   // Check chat exists and belongs to user
   const chat = await getChatById(uuid);
   if (!chat || chat.user_id !== user.id) {
@@ -55,6 +52,7 @@ router.post('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<vo
   }
   // Insert user message
   await insertMessage({ chatId: uuid, userId: user.id, role: 'user', content, model: null, provider: null });
+  await setChatModel(uuid, model);
   // Get all messages for chat (for context)
   const chatMessages = await getMessagesForChat(uuid);
   const openrouterMessages: ChatMessage[] = (chatMessages as any[]).map((m: any) => ({ role: m.role as 'user' | 'assistant', content: m.content, model: m.model ?? undefined }));

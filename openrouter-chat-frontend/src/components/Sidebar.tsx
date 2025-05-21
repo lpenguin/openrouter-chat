@@ -5,6 +5,7 @@ import SettingsDialog from './SettingsDialog';
 import { useState } from 'react';
 import { fetchSettings, saveSettings } from '../services/settingsService';
 import { Settings } from '../schemas/settingsSchema';
+import ChatList from './ChatList';
 
 export default function Sidebar({ user }: { user: AuthUser }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -32,7 +33,9 @@ export default function Sidebar({ user }: { user: AuthUser }) {
 
   return (
     <aside className="flex flex-col justify-between h-screen w-56 bg-gray-100 border-r shadow-sm p-4">
-      <div />
+      <div>
+        <ChatList />
+      </div>
       <div className="mb-2 flex justify-end">
         <Menu as="div" className="relative inline-block text-right w-auto">
           <MenuButton className="flex flex-row-reverse items-center gap-2 px-3 py-2 rounded bg-white shadow hover:bg-gray-50 text-gray-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">

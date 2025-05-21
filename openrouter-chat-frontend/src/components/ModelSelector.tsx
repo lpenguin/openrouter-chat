@@ -2,30 +2,33 @@ import React, { useEffect, useState, Fragment } from 'react';
 import { Listbox, Transition, ListboxOptions, ListboxButton, ListboxOption } from '@headlessui/react';
 import { fetchOpenRouterModels } from '../services/modelService';
 import type { ModelOption } from '../types/model';
+import { useChatStore } from '../store/chatStore';
 
-const LOCAL_STORAGE_KEY = 'openrouter-default-model';
 
-const ModelSelector: React.FC = () => {
+export default function ModelSelector() {
   const [models, setModels] = useState<ModelOption[]>([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
-
+  const { getChatById, setChatById, currentChatId } = useChatStore();
+  if (!currentChatId) return null;
+  const chat = getChatById(currentChatId);
+  if (!chat) return null;
   useEffect(() => {
     fetchOpenRouterModels().then(ms => {
       setModels(ms);
       console.log('Loaded models:', ms);
     }).catch(() => setModels([]));
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) setSelected(saved);
-  }, []);
+
+    if (chat.model) setSelected(chat.model);
+  }, [chat.model]);
 
   const filtered = search
     ? models.filter(m => m.name.toLowerCase().includes(search.toLowerCase()) || m.id.toLowerCase().includes(search.toLowerCase()))
     : models;
 
-  const handleSelect = (id: string) => {
-    setSelected(id);
-    localStorage.setItem(LOCAL_STORAGE_KEY, id);
+  const handleSelect = (model: string) => {
+    setSelected(model);
+    setChatById(chat.id, { ...chat, model });
   };
 
   const selectedModel = models.find(m => m.id === selected) || null;
@@ -95,4 +98,3 @@ const ModelSelector: React.FC = () => {
   );
 };
 
-export default ModelSelector;

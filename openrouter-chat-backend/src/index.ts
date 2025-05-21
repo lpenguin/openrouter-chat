@@ -1,9 +1,9 @@
 // Entry point for backend API (TypeScript)
 import express from 'express';
 import cors from 'cors';
-import authApi from './authApi';
-import settingsApi from './settingsApi';
-import chatsApi from './chatsApi';
+import authApi from './api/authApi';
+import settingsApi from './api/settingsApi';
+import chatsApi from './api/chatsApi';
 
 const app = express();
 app.use(cors());

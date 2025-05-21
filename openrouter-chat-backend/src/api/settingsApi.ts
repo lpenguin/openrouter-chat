@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getUserSettings, setUserSettings } from './services/settingsService';
-import { authMiddleware } from './services/authMiddleware';
+import { getUserSettings, setUserSettings } from '../services/settingsService';
+import { authMiddleware } from '../services/authMiddleware';
 
 const router = Router();
 

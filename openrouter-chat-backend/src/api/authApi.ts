@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { registerUser, loginUser } from './services/authService';
-import { authMiddleware } from './services/authMiddleware';
+import { registerUser, loginUser } from '../services/authService';
+import { authMiddleware } from '../services/authMiddleware';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';

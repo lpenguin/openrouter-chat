@@ -8,5 +8,5 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>((set) => ({
   authUser: null,
-  setAuthUser: (user) => set({ authUser: user }),
+  setAuthUser: (authUser) => set({ authUser })
 }));

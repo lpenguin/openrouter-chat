@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { loginApi, registerApi } from '../services/authService';
-import { getUser, setUser, removeUser } from '../services/userService';
+import { getUser, setUser } from '../services/userService';
 import type { AuthUser } from '../schemas/authUserSchema';
 
 export default function AuthGate({ children }: { children?: React.ReactNode }) {
@@ -17,15 +17,12 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
     const stored = getUser();
     if (stored) {
+      setUserState(stored);
       setAuthUser(stored);
     } else {
       setAuthUser(null);
     }
-  }, [setAuthUser]);
-  useEffect(() => {
-    if (user) setUser(user);
-    else removeUser();
-  }, [user]);
+  }, [setAuthUser, setUser]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
