@@ -2,11 +2,13 @@
 import express from 'express';
 import cors from 'cors';
 import authApi from './authApi';
+import settingsApi from './settingsApi';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api', authApi);
+app.use('/api/settings', settingsApi);
 
 // In-memory message store
 let messages = [

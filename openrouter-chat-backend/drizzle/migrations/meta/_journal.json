@@ -8,6 +8,13 @@
       "when": 1747747092840,
       "tag": "0000_wild_pete_wisdom",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1747835737386,
+      "tag": "0001_settings-table",
+      "breakpoints": true
     }
   ]
 }

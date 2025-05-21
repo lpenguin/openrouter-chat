@@ -30,7 +30,7 @@ function App() {
 
   return (
       <div className="bg-white text-gray-900 min-h-screen flex flex-row">
-        <Sidebar user={authUser?.user!!} />
+        <Sidebar user={authUser!!} />
         <Chat
           messages={messages}
           loading={loading}
