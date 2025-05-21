@@ -2,23 +2,23 @@ import React from 'react';
 
 interface ChatBubbleProps {
   content: string;
-  isUser: boolean;
+  role: 'user' | 'assistant';
 }
 
-const ChatBubble: React.FC<ChatBubbleProps> = ({ content, isUser }) => {
-  if (!isUser) {
+const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
+  if (role === 'assistant') {
     // Agent message: just padded text, full width
     return (
-      <div style={{ textAlign: 'left', fontSize: 16, color: 'var(--gray-12, #222)', width: '100%', padding: '8px' }}>
+      <div className="text-left text-[16px] text-gray-900 w-3/4 p-2">
         {content}
       </div>
     );
   }
-  // User message: callout with black text, min width 570px, gray color
+  // User message: callout with black text, gray color
   return (
-    <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '4px 0' }}>
-      <div style={{ backgroundColor: 'var(--gray-3, #f0f0f0)', borderRadius: '8px', padding: '8px', minWidth: 570, maxWidth: 320 }}>
-        <span style={{ color: '#111', fontSize: 16 }}>
+    <div className="flex justify-end my-1">
+      <div className="bg-gray-100 rounded-lg p-2 max-w-xs">
+        <span className="text-black text-[16px]">
           {content}
         </span>
       </div>

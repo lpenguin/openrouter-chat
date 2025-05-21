@@ -31,7 +31,7 @@ const ModelSelector: React.FC = () => {
   const selectedModel = models.find(m => m.id === selected) || null;
 
   return (
-    <div className="w-full max-w-xs">
+    <div className="w-full max-w-60 ml-5">
       <Listbox value={selected} onChange={handleSelect}>
         <div className="relative mt-1">
           <ListboxButton className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md border border-gray-300 focus:outline-none focus:ring-0 focus:border-gray-300 sm:text-sm flex items-center gap-2">

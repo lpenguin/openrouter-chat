@@ -22,8 +22,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 w-full pb-4 bg-gradient-to-t from-white via-white/90 to-transparent z-10 flex justify-center">
-      <div className="w-full max-w-2xl flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-lg">
+    <div className="py-4">
+      <div className="m-auto w-full max-w-2xl flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-lg">
         <input
           type="text"
           className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400 text-base"
@@ -42,6 +42,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
         </button>
       </div>
     </div>
+
   );
 };
 

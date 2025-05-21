@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import ModelSelector from './ModelSelector';
-import LogoutButton from './LogoutButton';
+import ChatInput from './ChatInput';
+import ChatBubble from './ChatBubble';
 
 interface Message {
   id: number;
@@ -11,9 +12,10 @@ interface Message {
 interface ChatProps {
   messages: Message[];
   loading: boolean;
+  onSend: (content: string) => void;
 }
 
-const Chat: React.FC<ChatProps> = ({ messages, loading }) => {
+const Chat: React.FC<ChatProps> = ({ messages, loading, onSend }) => {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -22,39 +24,44 @@ const Chat: React.FC<ChatProps> = ({ messages, loading }) => {
     }
   }, [messages.length]);
 
+  const handleSend = (content: string) => {
+    if (content.trim()) {
+      onSend(content);
+    }
+  };
+
   return (
-    <div className="flex-1 p-4 bg-gray-50 overflow-auto pb-32" style={{ height: '100vh', boxSizing: 'border-box' }}>
-      <div className="fixed top-0 left-0 w-full z-20 flex items-start bg-gray-50 p-4 border-b border-gray-200 justify-between">
-        <div className="mr-6">
-          <ModelSelector />
+    <div className="h-screen w-screen">
+      {/* Model Selector at top where the panel used to be */}
+      <div className="absolute">
+        <ModelSelector />
+      </div>
+      
+      <div className="flex flex-col h-screen">
+        {/* ChatMessages - Scrollable area */}
+        <div className="flex-1 w-full overflow-y-auto max-w-2xl m-auto">
+          <div className="w-full max-w-2xl mx-auto flex flex-col space-y-3 px-4 py-4">
+            {messages.map(msg =>
+              <ChatBubble
+                key={msg.id}
+                content={msg.content}
+                role={msg.role}
+              />
+            )}
+            {loading && (
+              <div className="px-4 py-2 text-gray-500">Assistant is typing...</div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
         </div>
-        <LogoutButton />
-      </div>
-      <div className="space-y-2 pt-24">
-        {messages.map(msg =>
-          msg.role === 'user' ? (
-            <div
-              key={msg.id}
-              className="ml-auto bg-blue-500 text-white p-3 rounded-xl max-w-3/4 w-fit shadow-md"
-              style={{ maxWidth: '75%' }}
-            >
-              {msg.content}
-            </div>
-          ) : (
-            <div
-              key={msg.id}
-              className="w-full text-gray-900 bg-transparent px-2 py-3 text-base"
-              style={{ maxWidth: '100%' }}
-            >
-              {msg.content}
-            </div>
-          )
-        )}
-        {loading && (
-          <div className="px-4 py-2 text-gray-500">Assistant is typing...</div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
+        {/* SendButton - Fixed at bottom */}
+        <div className="w-full border-t border-gray-200 bg-white sticky bottom-0 z-10">
+          <ChatInput
+            onSend={handleSend}
+            disabled={loading}
+          />
+        </div>
+      </div> 
     </div>
   );
 };
