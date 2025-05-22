@@ -3,19 +3,17 @@ import { eq, desc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getUserSettings } from './settingsService';
 
-export async function createChat({ userId }: { userId: number }) {
+export async function createChat({ userId }: { userId: number }): Promise<typeof chats.$inferSelect> {
   const now = new Date();
-  const chatId = randomUUID();
   const userSettings = await getUserSettings(userId);
   const model = userSettings.defaultModel ?? 'openai/gpt-3.5-turbo';
-  await db.insert(chats).values({
-    id: chatId,
+  const resultChats = await db.insert(chats).values({
     user_id: userId,
     model,
     created_at: now,
     updated_at: now,
-  });
-  return { id: chatId, user_id: userId, model, created_at: now, updated_at: now };
+  }).returning();
+  return resultChats[0];
 }
 
 export async function listChats(userId: number) {
@@ -34,7 +32,7 @@ export async function insertMessage({ chatId, userId, role, content, model, prov
   content: string,
   model?: string | null,
   provider?: string | null,
-}) {
+}): Promise<typeof messages.$inferInsert> {
   const now = new Date();
   const msgId = randomUUID();
   await db.insert(messages).values({

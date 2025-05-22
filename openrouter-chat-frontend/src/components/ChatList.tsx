@@ -57,7 +57,7 @@ const ChatList = () => {
             }`}
             onClick={() => setCurrentChatId(chat.id)}
           >
-            {chat.id}
+            {chat.name}
           </li>
         ))}
       </ul>

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const ChatSchema = z.object({
   id: z.string().uuid(),
+  name: z.string(),
   user_id: z.number(),
   model: z.string(),
   created_at: z.string().or(z.date()),

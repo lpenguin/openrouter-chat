@@ -18,6 +18,7 @@ export const settings = pgTable('settings', {
 export const chats = pgTable('chats', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: integer('user_id').notNull().references(() => users.id),
+  name: text('name').default('New Chat'),
   model: text('model').notNull(), // default model for the chat
   created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
