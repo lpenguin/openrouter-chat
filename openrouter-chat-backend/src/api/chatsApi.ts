@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../services/authMiddleware';
 import { z } from 'zod';
-import { postMessageSchema } from '../chatsSchema';
 import { getOpenRouterCompletion, ChatMessage } from '../services/openrouterService';
 import { getUserSettings } from '../services/settingsService';
 import {
@@ -12,6 +11,13 @@ import {
   getMessagesForChat,
   setChatModel,
 } from '../services/chatService';
+
+
+const postMessageSchema = z.object({
+  content: z.string().min(1, 'Content is required'),
+  model: z.string().min(1, 'Model is required'),
+});
+
 
 const router = Router();
 

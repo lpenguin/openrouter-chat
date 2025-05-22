@@ -1,7 +1,7 @@
 import { db } from '../db';
 import { settings } from '../schema';
 import { eq } from 'drizzle-orm';
-import { settingsSchema, Settings } from '../settingsSchema';
+import { settingsSchema, Settings } from '../schemas/settingsSchema';
 
 export async function getUserSettings(userId: number): Promise<Settings> {
   const result = await db.select().from(settings).where(eq(settings.user_id, userId));
