@@ -9,7 +9,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
   if (role === 'assistant') {
     // Agent message: just padded text, full width
     return (
-      <div className="text-left text-[16px] text-theme-primary w-3/4 p-2">
+      <div className="text-left text-[16px] text-theme-primary w-full p-2">
         {content}
       </div>
     );
