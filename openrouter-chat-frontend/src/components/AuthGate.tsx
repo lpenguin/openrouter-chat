@@ -34,6 +34,7 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
         : await registerApi(email, password);
       setUserState(data);
       setAuthUser(data);
+      setUser(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
