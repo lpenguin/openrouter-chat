@@ -41,24 +41,24 @@ export default function SettingsDialog({ open, onClose, initialSettings, onSave 
               enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
               leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
+              <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-theme-surface p-6 text-left align-middle shadow-xl transition-all border border-theme">
+                <DialogTitle as="h3" className="text-lg font-medium leading-6 text-theme-primary mb-4">
                   Settings
                 </DialogTitle>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">OpenRouter Token</label>
+                  <label className="block text-sm font-medium text-theme-primary mb-1">OpenRouter Token</label>
                   <input
                     type="text"
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-theme rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-theme-primary bg-theme-background text-theme-primary placeholder:text-theme-secondary"
                     value={token}
                     onChange={e => setToken(e.target.value)}
                   />
                 </div>
-                {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+                {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
-                    className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    className="px-4 py-2 rounded bg-theme-surface text-theme-primary hover:bg-theme-background border border-theme"
                     onClick={onClose}
                     disabled={saving}
                   >
@@ -66,7 +66,7 @@ export default function SettingsDialog({ open, onClose, initialSettings, onSave 
                   </button>
                   <button
                     type="button"
-                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                    className="px-4 py-2 rounded bg-theme-primary text-white hover:bg-theme-success"
                     onClick={handleSave}
                     disabled={saving}
                   >

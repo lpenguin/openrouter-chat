@@ -1,0 +1,72 @@
+/* theme-colors.css */
+
+/* Base definitions for all themes */
+:root {
+  /* GitHub theme - default */
+  --background: #ffffff;
+  --surface: #f6f8fa;
+  --border: #d0d7de;
+  --primary: #0969da;
+  --success: #2da44e;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+}
+
+/* Pastel Brown Theme */
+.theme-pastel-brown {
+  --background: #fcf8f4;
+  --surface: #f4efe9;
+  --border: #e5d8c9;
+  --primary: #c19a6b;
+  --success: #b58863;
+  --text-primary: #5d4037;
+  --text-secondary: #8d6e63;
+}
+
+/* Pastel Teal Theme */
+.theme-pastel-teal {
+  --background: #f2fbfa;
+  --surface: #e6f7f5;
+  --border: #c4eae5;
+  --primary: #88c9c9;
+  --success: #66b2b2;
+  --text-primary: #00695c;
+  --text-secondary: #26a69a;
+}
+
+/* Pastel Lavender Theme */
+.theme-pastel-lavender {
+  --background: #f9f7ff;
+  --surface: #f3effd;
+  --border: #e1d9f5;
+  --primary: #bbb1e0;
+  --success: #9f8ac7;
+  --text-primary: #4527a0;
+  --text-secondary: #7e57c2;
+}
+
+/* Pastel Sage Theme */
+.theme-pastel-sage {
+  --background: #f8fcf8;
+  --surface: #f0f7f0;
+  --border: #daebd9;
+  --primary: #a7ceab;
+  --success: #8cba92;
+  --text-primary: #33691e;
+  --text-secondary: #689f38;
+}
+
+/* Apply themed background to specific elements */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+/* Utility classes to use with Tailwind's arbitrary values */
+.bg-theme-background { background-color: var(--background); }
+.bg-theme-surface { background-color: var(--surface); }
+.bg-theme-primary { background-color: var(--primary); }
+.bg-theme-success { background-color: var(--success); }
+.text-theme-primary { color: var(--text-primary); }
+.text-theme-secondary { color: var(--text-secondary); }
+.border-theme { border-color: var(--border); }

@@ -37,11 +37,11 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
     <div className="w-full max-w-60 ml-5">
       <Listbox value={selected} onChange={handleSelect}>
         <div className="relative mt-1">
-          <ListboxButton className="relative w-full cursor-pointer rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md border border-gray-300 focus:outline-none focus:ring-0 focus:border-gray-300 sm:text-sm flex items-center gap-2">
-            <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20" aria-hidden="true">
+          <ListboxButton className="relative w-full cursor-pointer rounded-lg bg-theme-surface py-2 pl-3 pr-10 text-left shadow-md border border-theme focus:outline-none focus:ring-0 focus:border-theme sm:text-sm flex items-center gap-2">
+            <svg className="w-5 h-5 text-theme-secondary mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
             </svg>
-            <span className="block truncate">{selectedModel ? selectedModel.name : 'Select Model'}</span>
+            <span className="block truncate text-theme-primary">{selectedModel ? selectedModel.name : 'Select Model'}</span>
           </ListboxButton>
           <Transition
             as={Fragment}
@@ -54,10 +54,10 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
             afterLeave={() => setSearch('')}
           >
             {open => open && (
-              <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-[16rem] min-w-[14rem] overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+              <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-[16rem] min-w-[14rem] overflow-auto rounded-md bg-theme-surface py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm border border-theme">
                 <div className="px-2 py-1">
                   <input
-                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded border border-theme px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary bg-theme-background text-theme-primary placeholder:text-theme-secondary"
                     placeholder="Search models..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -65,23 +65,23 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
                   />
                 </div>
                 {filtered.length === 0 && (
-                  <div className="px-4 py-2 text-gray-400">No models found</div>
+                  <div className="px-4 py-2 text-theme-secondary">No models found</div>
                 )}
                 {filtered.map(m => (
                   <ListboxOption
                     key={m.id}
                     value={m.id}
-                    className={({ active }: { active: boolean; selected: boolean }) =>
+                    className={({ active, selected: isSelected }: { active: boolean; selected: boolean }) =>
                       `relative cursor-pointer select-none py-2 pl-4 pr-4 ${
-                        active ? 'bg-blue-100 text-blue-900' : 'text-gray-900'
-                      }${selected === m.id ? ' font-bold' : ''}`
+                        active ? 'bg-theme-surface text-theme-primary' : 'text-theme-primary'
+                      }${isSelected ? ' font-bold' : ''}`
                     }
                   >
                     {({ selected: isSelected }: { selected: boolean }) => (
                       <>
                         <span className={`block truncate${isSelected ? ' font-bold' : ''}`}>{m.name}</span>
                         {isSelected ? (
-                          <span className="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-600">
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-1 text-theme-primary">
                             ✓
                           </span>
                         ) : null}

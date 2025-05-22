@@ -29,15 +29,15 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
 
   if (!authUser) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-80 flex flex-col gap-4">
-          <h2 className="text-xl font-bold mb-2">{mode === 'login' ? 'Sign In' : 'Register'}</h2>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-theme-background text-theme-primary">
+        <form onSubmit={handleSubmit} className="bg-theme-surface p-6 rounded shadow w-80 flex flex-col gap-4 border border-theme">
+          <h2 className="text-xl font-bold mb-2 text-theme-primary">{mode === 'login' ? 'Sign In' : 'Register'}</h2>
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="border p-2 rounded"
+            className="border border-theme p-2 rounded bg-theme-background text-theme-primary placeholder:text-theme-secondary"
             required
           />
           <input
@@ -45,19 +45,19 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
             placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="border p-2 rounded"
+            className="border border-theme p-2 rounded bg-theme-background text-theme-primary placeholder:text-theme-secondary"
             required
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white py-2 rounded disabled:opacity-50"
+            className="bg-theme-primary text-white py-2 rounded disabled:opacity-50"
             disabled={loading}
           >
             {loading ? (mode === 'login' ? 'Signing in...' : 'Registering...') : (mode === 'login' ? 'Sign In' : 'Register')}
           </button>
           <button
             type="button"
-            className="text-blue-600 underline text-sm"
+            className="text-theme-primary underline text-sm"
             onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
           >
             {mode === 'login' ? 'Need an account? Register' : 'Already have an account? Sign In'}

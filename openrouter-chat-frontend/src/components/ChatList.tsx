@@ -31,9 +31,9 @@ const ChatList = () => {
   return (
     <div className="w-full max-w-xs mx-auto p-4">
       <div className="flex flex-col justify-between mb-4">
-        <h2 className="text-lg font-semibold">Chats</h2>
+        <h2 className="text-lg font-semibold text-theme-primary">Chats</h2>
         <button
-          className="flex items-center justify-between px-3 py-2 mt-5 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none w-full cursor-pointer"
+          className="flex items-center justify-between px-3 py-2 mt-5 bg-theme-primary text-white rounded hover:bg-theme-success focus:outline-none w-full cursor-pointer"
           onClick={handleNewChat}
           disabled={!authUser}
         >
@@ -43,15 +43,15 @@ const ChatList = () => {
       </div>
       <ul className="space-y-1">
         {chats.length === 0 && (
-          <li className="px-4 py-2 text-gray-400">No chats yet</li>
+          <li className="px-4 py-2 text-theme-secondary">No chats yet</li>
         )}
         {chats.map((chat) => (
           <li
             key={chat.id}
             className={`px-4 py-2 rounded cursor-pointer transition-colors ${
               chat.id === currentChatId
-                ? 'bg-blue-100 text-blue-900 font-semibold'
-                : 'hover:bg-gray-200 text-gray-900'
+                ? 'bg-theme-surface text-theme-primary font-semibold border border-theme'
+                : 'hover:bg-theme-surface text-theme-primary'
             }`}
             onClick={() => setCurrentChatId(chat.id)}
           >

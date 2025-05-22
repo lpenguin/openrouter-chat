@@ -23,10 +23,10 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
 
   return (
     <div className="py-4">
-      <div className="m-auto w-full max-w-2xl flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-lg">
+      <div className="m-auto w-full max-w-2xl flex items-center gap-2 bg-theme-surface border border-theme rounded-lg px-3 py-2 shadow-lg">
         <input
           type="text"
-          className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400 text-base"
+          className="flex-1 bg-transparent outline-none text-theme-primary placeholder:text-theme-secondary text-base"
           placeholder="Type your message..."
           value={value}
           onChange={e => setValue(e.target.value)}
@@ -34,7 +34,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           disabled={disabled}
         />
         <button
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow"
+          className="bg-theme-primary hover:bg-theme-success text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow"
           onClick={handleSend}
           disabled={disabled || !value.trim()}
         >

@@ -9,16 +9,16 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
   if (role === 'assistant') {
     // Agent message: just padded text, full width
     return (
-      <div className="text-left text-[16px] text-gray-900 w-3/4 p-2">
+      <div className="text-left text-[16px] text-theme-primary w-3/4 p-2">
         {content}
       </div>
     );
   }
-  // User message: callout with black text, gray color
+  // User message: callout with themed background and text
   return (
     <div className="flex justify-end my-1">
-      <div className="bg-gray-100 rounded-lg p-2 max-w-xs">
-        <span className="text-black text-[16px]">
+      <div className="bg-theme-surface rounded-lg p-2 max-w-xs border border-theme">
+        <span className="text-theme-primary text-[16px]">
           {content}
         </span>
       </div>
