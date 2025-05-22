@@ -12,7 +12,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
   if (role === 'assistant') {
     // Agent message: just padded text, full width
     return (
-      <div className="text-left text-[16px] text-theme-primary w-full p-2 markdown">
+      <div className="text-left text-[16px] w-full p-2 markdown">
         <Markdown
           children={content}
           remarkPlugins={[remarkGfm]}
@@ -38,7 +38,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
   return (
     <div className="flex justify-end my-1">
       <div className="bg-theme-surface rounded-lg p-2 max-w-xs border border-theme">
-        <span className="text-theme-primary text-[16px]">
+        <span className="text-[16px]">
           <Markdown>{content}</Markdown>
         </span>
       </div>

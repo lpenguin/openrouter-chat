@@ -7,6 +7,7 @@
   --surface: #f6f8fa;
   --border: #d0d7de;
   --primary: #0969da;
+  --primary-accent: #075bbd;
   --success: #2da44e;
   --text-primary: #24292f;
   --text-secondary: #57606a;
@@ -18,6 +19,7 @@
   --surface: #f4efe9;
   --border: #e5d8c9;
   --primary: #c19a6b;
+  --primary-accent: #a8845a;
   --success: #b58863;
   --text-primary: #5d4037;
   --text-secondary: #8d6e63;
@@ -29,6 +31,7 @@
   --surface: #e6f7f5;
   --border: #c4eae5;
   --primary: #88c9c9;
+  --primary-accent: #6bb0b0;
   --success: #66b2b2;
   --text-primary: #00695c;
   --text-secondary: #26a69a;
@@ -40,6 +43,7 @@
   --surface: #f3effd;
   --border: #e1d9f5;
   --primary: #bbb1e0;
+  --primary-accent: #a095c9;
   --success: #9f8ac7;
   --text-primary: #4527a0;
   --text-secondary: #7e57c2;
@@ -50,7 +54,8 @@
   --background: #f8fcf8;
   --surface: #f0f7f0;
   --border: #daebd9;
-  --primary: #a7ceab;
+  --primary: #6b9c74;
+  --primary-accent: #4d7152;
   --success: #8cba92;
   --text-primary: #33691e;
   --text-secondary: #689f38;
@@ -66,7 +71,31 @@ body {
 .bg-theme-background { background-color: var(--background); }
 .bg-theme-surface { background-color: var(--surface); }
 .bg-theme-primary { background-color: var(--primary); }
+.bg-theme-primary-accent { background-color: var(--primary-accent); }
 .bg-theme-success { background-color: var(--success); }
 .text-theme-primary { color: var(--text-primary); }
+.text-theme-primary-accent { color: var(--primary-accent); }
 .text-theme-secondary { color: var(--text-secondary); }
 .border-theme { border-color: var(--border); }
+
+/* Hover utility classes (for use as hover:bg-theme-primary, etc.) */
+.hover\:bg-theme-background:hover { background-color: var(--background); }
+.hover\:bg-theme-surface:hover { background-color: var(--surface); }
+.hover\:bg-theme-primary:hover { background-color: var(--primary); }
+.hover\:bg-theme-primary-accent:hover { background-color: var(--primary-accent); }
+.hover\:bg-theme-success:hover { background-color: var(--success); }
+.hover\:text-theme-primary:hover { color: var(--text-primary); }
+.hover\:text-theme-primary-accent:hover { color: var(--primary-accent); }
+.hover\:text-theme-secondary:hover { color: var(--text-secondary); }
+.hover\:border-theme:hover { border-color: var(--border); }
+
+/* Hover states for utility classes */
+.bg-theme-background:hover { background-color: var(--surface); }
+.bg-theme-surface:hover { background-color: var(--background); }
+.bg-theme-primary:hover { filter: brightness(0.92); }
+.bg-theme-primary-accent:hover { filter: brightness(0.92); }
+.bg-theme-success:hover { filter: brightness(0.92); }
+.text-theme-primary:hover { color: var(--text-secondary); }
+.text-theme-primary-accent:hover { color: var(--text-secondary); }
+.text-theme-secondary:hover { color: var(--text-primary); }
+.border-theme:hover { border-color: var(--primary); }

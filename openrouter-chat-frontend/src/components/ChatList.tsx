@@ -33,7 +33,7 @@ const ChatList = () => {
       <div className="flex flex-col justify-between mb-4">
         <h2 className="text-lg font-semibold text-theme-primary">Chats</h2>
         <button
-          className="flex items-center justify-between px-3 py-2 mt-5 bg-theme-primary text-white rounded hover:bg-theme-success focus:outline-none w-full cursor-pointer"
+          className="flex items-center justify-between px-3 py-2 mt-5 bg-theme-primary text-white rounded hover:bg-theme-primary focus:outline-none w-full cursor-pointer"
           onClick={handleNewChat}
           disabled={!authUser}
         >

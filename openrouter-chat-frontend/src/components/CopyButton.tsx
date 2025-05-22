@@ -6,7 +6,7 @@ interface CopyButtonProps {
   className?: string;
 }
 
-const CopyButton: React.FC<CopyButtonProps> = ({ value, className }) => {
+const CopyButton: React.FC<CopyButtonProps> = ({ value }) => {
   const [copied, setCopied] = React.useState(false);
   const [showPopover, setShowPopover] = React.useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -36,7 +36,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ value, className }) => {
     <div className="relative inline-block overflow-visible" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <button
         onClick={handleCopy}
-        className={`ml-2 p-1 rounded transition bg-theme-surface hover:bg-theme-surface/80 focus:bg-theme-surface/80 active:bg-theme-surface/60 ${copied ? 'bg-theme-success/20' : ''} ${className || ''} cursor-pointer`}
+        className="ml-2 p-1 rounded transition bg-theme-surface hover:bg-theme-primary cursor-pointer"
         aria-label="Copy code to clipboard"
         type="button"
         style={{ color: 'var(--text-primary)' }}
