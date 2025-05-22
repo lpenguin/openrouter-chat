@@ -3,25 +3,13 @@ import ChevronDownIcon from '@heroicons/react/20/solid/ChevronDownIcon.js';
 import type { AuthUser } from '../schemas/authUserSchema';
 import SettingsDialog from './SettingsDialog';
 import { useState } from 'react';
-import { saveSettings } from '../services/settingsService';
-import { Settings } from '../schemas/settingsSchema';
 import ChatList from './ChatList';
-import { useSettingsStore } from '../store/settingsStore';
 
 export default function Sidebar({ user }: { user: AuthUser }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const settings = useSettingsStore(s => s.settings) || { operouter: { token: '' }, theme: 'github' };
-  const setSettings = useSettingsStore(s => s.setSettings);
 
   function handleOpenSettings() {
     setSettingsOpen(true);
-  }
-
-  async function handleSaveSettings(newSettings: Settings) {
-    if (user.token) {
-      await saveSettings(user.token, newSettings);
-      setSettings(newSettings);
-    }
   }
 
   function handleLogout() {
@@ -68,8 +56,6 @@ export default function Sidebar({ user }: { user: AuthUser }) {
         <SettingsDialog
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
-          initialSettings={settings}
-          onSave={handleSaveSettings}
         />
       </div>
     </aside>

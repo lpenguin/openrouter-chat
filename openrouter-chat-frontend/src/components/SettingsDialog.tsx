@@ -1,6 +1,8 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useSettingsStore } from '../store/settingsStore';
+import { useAuthStore } from '../store/authStore';
+import * as settingsService from '../services/settingsService';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react';
 import type { Settings } from '../schemas/settingsSchema';
 
@@ -12,25 +14,36 @@ const THEMES = [
   { value: 'pastel-sage', label: 'Pastel Sage' },
 ];
 
-export default function SettingsDialog({ open, onClose, initialSettings, onSave }: {
+export default function SettingsDialog({ open, onClose }: {
   open: boolean;
   onClose: () => void;
-  initialSettings: Settings;
-  onSave: (settings: Settings) => void;
 }) {
-  const [token, setToken] = useState(initialSettings.operouter.token);
-  const [theme, setTheme] = useState(initialSettings.theme || 'github');
+  const authUser = useAuthStore((state) => state.authUser);
+  if (!authUser) return null;
+
+  const { settings, setSettings } = useSettingsStore();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const setThemeStore = useSettingsStore(s => s.setTheme);
+  const [token, setToken] = useState(settings?.operouter.token || '');
+  const [theme, setTheme] = useState(settings?.theme || 'github');
+
+  useEffect(() => {
+    if (settings) {
+      setToken(settings.operouter.token);
+      setTheme(settings.theme);
+    }
+  }, [settings]);
+
 
   function handleSave() {
+    if (!authUser) return;
+  
     setSaving(true);
     setError(null);
     try {
       const newSettings: Settings = { operouter: { token }, theme };
-      onSave(newSettings);
-      setThemeStore(theme);
+      setSettings(newSettings);
+      settingsService.saveSettings(authUser.token, newSettings);
       onClose();
     } catch (e) {
       setError('Failed to save settings');
@@ -72,7 +85,7 @@ export default function SettingsDialog({ open, onClose, initialSettings, onSave 
                 </div>
                 <div className="mb-4 z-50">
                   <label className="block text-sm font-medium text-theme-primary mb-1">Theme</label>
-                  <Listbox value={theme} onChange={value => { setTheme(value); setThemeStore(value); }}>
+                  <Listbox value={theme} onChange={setTheme}>
                     <div className="relative">
                       <ListboxButton className="w-full border border-theme rounded px-3 py-2 bg-theme-background text-theme-primary flex justify-between items-center">
                         <span>{THEMES.find(t => t.value === theme)?.label}</span>
