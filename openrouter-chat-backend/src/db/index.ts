@@ -1,6 +1,8 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import dotenv from "dotenv";
 
+export { chats, messages, settings, users }  from "./schema";
+
 dotenv.config({ path: ".env" });
 
 // Use your Supabase connection string (service role recommended for migrations)

@@ -1,5 +1,4 @@
-import { db } from '../db';
-import { settings } from '../schema';
+import { db, settings } from '../db';
 import { eq } from 'drizzle-orm';
 import { settingsSchema, Settings } from '../schemas/settingsSchema';
 
