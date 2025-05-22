@@ -6,6 +6,7 @@ export const settingsSchema = z.object({
   }),
   defaultModel: z.string().default('openai/gpt-3.5-turbo'),
   defaultProvider: z.enum(['openrouter']).default('openrouter'),
+  theme: z.string().default('github'), // Add theme field
 });
 
 export type Settings = z.infer<typeof settingsSchema>;

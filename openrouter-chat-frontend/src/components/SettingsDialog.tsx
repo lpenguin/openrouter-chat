@@ -1,21 +1,36 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Fragment, useState } from 'react';
+import { useSettingsStore } from '../store/settingsStore';
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react';
+import type { Settings } from '../schemas/settingsSchema';
+
+const THEMES = [
+  { value: 'github', label: 'GitHub (Default)' },
+  { value: 'pastel-brown', label: 'Pastel Brown' },
+  { value: 'pastel-teal', label: 'Pastel Teal' },
+  { value: 'pastel-lavender', label: 'Pastel Lavender' },
+  { value: 'pastel-sage', label: 'Pastel Sage' },
+];
 
 export default function SettingsDialog({ open, onClose, initialSettings, onSave }: {
   open: boolean;
   onClose: () => void;
-  initialSettings: { operouter: { token: string } };
-  onSave: (settings: { operouter: { token: string } }) => void;
+  initialSettings: Settings;
+  onSave: (settings: Settings) => void;
 }) {
   const [token, setToken] = useState(initialSettings.operouter.token);
+  const [theme, setTheme] = useState(initialSettings.theme || 'github');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const setThemeStore = useSettingsStore(s => s.setTheme);
 
   function handleSave() {
     setSaving(true);
     setError(null);
     try {
-      onSave({ operouter: { token } });
+      const newSettings: Settings = { operouter: { token }, theme };
+      onSave(newSettings);
+      setThemeStore(theme);
       onClose();
     } catch (e) {
       setError('Failed to save settings');
@@ -32,7 +47,8 @@ export default function SettingsDialog({ open, onClose, initialSettings, onSave 
           enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100"
           leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-30 transition-opacity" />
+          {/* Brighter and more transparent overlay */}
+          <div className="fixed inset-0 bg-white bg-opacity-60 transition-opacity backdrop-blur-sm" />
         </TransitionChild>
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -41,7 +57,7 @@ export default function SettingsDialog({ open, onClose, initialSettings, onSave 
               enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
               leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-theme-surface p-6 text-left align-middle shadow-xl transition-all border border-theme">
+              <DialogPanel className="w-full max-w-md transform overflow-visible rounded-lg bg-theme-surface p-6 text-left align-middle shadow-xl transition-all border border-theme">
                 <DialogTitle as="h3" className="text-lg font-medium leading-6 text-theme-primary mb-4">
                   Settings
                 </DialogTitle>
@@ -53,6 +69,32 @@ export default function SettingsDialog({ open, onClose, initialSettings, onSave 
                     value={token}
                     onChange={e => setToken(e.target.value)}
                   />
+                </div>
+                <div className="mb-4 z-50">
+                  <label className="block text-sm font-medium text-theme-primary mb-1">Theme</label>
+                  <Listbox value={theme} onChange={value => { setTheme(value); setThemeStore(value); }}>
+                    <div className="relative">
+                      <ListboxButton className="w-full border border-theme rounded px-3 py-2 bg-theme-background text-theme-primary flex justify-between items-center">
+                        <span>{THEMES.find(t => t.value === theme)?.label}</span>
+                        <svg className="w-4 h-4 ml-2 text-theme-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20"><path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" /></svg>
+                      </ListboxButton>
+                      <ListboxOptions className="absolute left-0 right-0 mt-1 max-h-60 overflow-auto rounded bg-theme-surface border border-theme shadow-2xl z-[100]">
+                        {THEMES.map(t => (
+                          <ListboxOption
+                            key={t.value}
+                            value={t.value}
+                            className={({ active, selected }) =>
+                              `cursor-pointer select-none px-4 py-2 ${
+                                selected ? 'font-bold text-theme-primary' : 'text-theme-primary'
+                              } ${active ? 'bg-theme-background' : ''}`
+                            }
+                          >
+                            {t.label}
+                          </ListboxOption>
+                        ))}
+                      </ListboxOptions>
+                    </div>
+                  </Listbox>
                 </div>
                 {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
                 <div className="flex justify-end gap-2">

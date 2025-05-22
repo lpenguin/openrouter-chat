@@ -1,12 +1,14 @@
-import { create } from "zustand";
-import { Settings } from "../schemas/settingsSchema";
+import { create } from 'zustand';
+import type { Settings } from '../schemas/settingsSchema';
 
 interface SettingsStore {
-    settings: Settings | null;
-    setSettings: (settings: Settings) => void;
+  settings: Settings | null;
+  setSettings: (settings: Settings) => void;
+  setTheme: (theme: string) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
-    settings: null,
-    setSettings: (settings) => set({ settings }),
+  settings: null,
+  setSettings: (settings) => set({ settings }),
+  setTheme: (theme) => set((state) => state.settings ? { settings: { ...state.settings, theme } } : {}),
 }));

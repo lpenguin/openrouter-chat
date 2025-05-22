@@ -3,19 +3,17 @@ import ChevronDownIcon from '@heroicons/react/20/solid/ChevronDownIcon.js';
 import type { AuthUser } from '../schemas/authUserSchema';
 import SettingsDialog from './SettingsDialog';
 import { useState } from 'react';
-import { fetchSettings, saveSettings } from '../services/settingsService';
+import { saveSettings } from '../services/settingsService';
 import { Settings } from '../schemas/settingsSchema';
 import ChatList from './ChatList';
+import { useSettingsStore } from '../store/settingsStore';
 
 export default function Sidebar({ user }: { user: AuthUser }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState<Settings>({ operouter: { token: '' } });
+  const settings = useSettingsStore(s => s.settings) || { operouter: { token: '' }, theme: 'github' };
+  const setSettings = useSettingsStore(s => s.setSettings);
 
-  async function handleOpenSettings() {
-    if (user.token) {
-      const loaded = await fetchSettings(user.token);
-      setSettings(loaded || { operouter: { token: '' } });
-    }
+  function handleOpenSettings() {
     setSettingsOpen(true);
   }
 
@@ -32,23 +30,23 @@ export default function Sidebar({ user }: { user: AuthUser }) {
   }
 
   return (
-    <aside className="flex flex-col justify-between h-screen w-56 bg-gray-100 border-r shadow-sm p-4">
+    <aside className="flex flex-col justify-between h-screen w-56 bg-theme-surface border-theme border-r shadow-sm p-4">
       <div>
         <ChatList />
       </div>
       <div className="mb-2 flex justify-end">
         <Menu as="div" className="relative inline-block text-right w-auto">
-          <MenuButton className="flex flex-row-reverse items-center gap-2 px-3 py-2 rounded bg-white shadow hover:bg-gray-50 text-gray-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <MenuButton className="flex flex-row-reverse items-center gap-2 px-3 py-2 rounded bg-theme-background shadow hover:bg-theme-surface text-theme-primary text-sm font-medium focus:outline-none focus:ring-2 focus:ring-theme-primary">
             <span className="truncate max-w-[120px]">{user.user.email}</span>
-            <ChevronDownIcon className="w-4 h-4 text-gray-400 ml-1" />
+            <ChevronDownIcon className="w-4 h-4 text-theme-secondary ml-1" />
           </MenuButton>
-          <MenuItems className="absolute right-0 bottom-full mb-2 w-40 origin-bottom-right bg-white border border-gray-200 rounded shadow-lg focus:outline-none z-10">
+          <MenuItems className="absolute right-0 bottom-full mb-2 w-40 origin-bottom-right bg-theme-surface border border-theme rounded shadow-lg focus:outline-none z-10">
             <div className="py-1">
               <MenuItem>
                 {({ active }) => (
                   <button
                     onClick={handleOpenSettings}
-                    className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${active ? 'bg-gray-100' : ''}`}
+                    className={`w-full text-left px-4 py-2 text-sm text-theme-primary hover:bg-theme-background ${active ? 'bg-theme-background' : ''}`}
                   >
                     Settings
                   </button>
@@ -58,7 +56,7 @@ export default function Sidebar({ user }: { user: AuthUser }) {
                 {({ active }) => (
                   <button
                     onClick={handleLogout}
-                    className={`w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 ${active ? 'bg-gray-100' : ''}`}
+                    className={`w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-theme-background ${active ? 'bg-theme-background' : ''}`}
                   >
                     Logout
                   </button>
