@@ -1,7 +1,7 @@
 import React from 'react';
 import Markdown from 'react-markdown';
 import CodeBlock from './CodeBlock';
-
+import remarkGfm from 'remark-gfm'
 
 interface ChatBubbleProps {
   content: string;
@@ -15,6 +15,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
       <div className="text-left text-[16px] text-theme-primary w-full p-2 markdown">
         <Markdown
           children={content}
+          remarkPlugins={[remarkGfm]}
           components={{
             code({children, className}) {
               const match = /language-(\w+)/.exec(className || '')
