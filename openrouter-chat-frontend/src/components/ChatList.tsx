@@ -1,6 +1,6 @@
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
-import { PlusIcon } from '@heroicons/react/20/solid';
+import { DocumentTextIcon } from '@heroicons/react/20/solid';
 import { useCallback } from 'react';
 
 const ChatList = () => {
@@ -30,14 +30,15 @@ const ChatList = () => {
 
   return (
     <div className="w-full max-w-xs mx-auto p-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col justify-between mb-4">
         <h2 className="text-lg font-semibold">Chats</h2>
         <button
-          className="inline-flex items-center px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
+          className="flex items-center justify-between px-3 py-2 mt-5 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none w-full cursor-pointer"
           onClick={handleNewChat}
           disabled={!authUser}
         >
-          <PlusIcon className="w-4 h-4 mr-1" /> New Chat
+          <span>New Chat</span>
+          <DocumentTextIcon className="w-7 h-7 ml-2" />
         </button>
       </div>
       <ul className="space-y-1">
