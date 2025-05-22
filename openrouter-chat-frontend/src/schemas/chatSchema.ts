@@ -9,18 +9,27 @@ export const ChatSchema = z.object({
   updated_at: z.string().or(z.date()),
 });
 
-export type Chat = z.infer<typeof ChatSchema>;
-
-export const MessageSchema = z.object({
+const BaseMessageSchema = z.object({
   id: z.string().uuid(),
   chat_id: z.string().uuid(),
   user_id: z.number(),
   role: z.enum(['user', 'assistant']),
-  content: z.string(),
-  model: z.string().nullable(),
-  provider: z.string().nullable(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
+  content: z.string(),
 });
 
-export type Message = z.infer<typeof MessageSchema>;
+export const UserMessageSchema = BaseMessageSchema.extend({
+  role: z.literal('user'),
+});
+export const AssistantMessageSchema = BaseMessageSchema.extend({
+  role: z.literal('assistant'),
+  model: z.string(),
+  provider: z.string(),
+});
+
+export const MessageSchema = z.discriminatedUnion('role', [
+  UserMessageSchema,
+  AssistantMessageSchema,
+]);
+

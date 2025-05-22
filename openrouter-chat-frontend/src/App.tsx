@@ -8,30 +8,24 @@ import * as chatService from './services/chatService';
 
 function App() {
   const authUser = useAuthStore((state) => state.authUser);
-  console.log('App rendered with authUser:', JSON.stringify(authUser));
   if (!authUser) return null;
 
-  const { currentChatId, setChats, setCurrentChatId, setLoading } = useChatStore();
+  const { setCurrentChatId, setChats, setLoading } = useChatStore();
   // On login, load chats or create a new one using populateChatStore
   useEffect(() => {
     (async () => {
       setLoading(true);
-      // Always create a new chat, regardless of existing chats
-      const chat = await chatService.createChat(authUser.token);
-      setChats([chat]);
-      setCurrentChatId(chat.id);
+      const chats = await chatService.getChats(authUser.token);
+      setChats(chats);
+      setCurrentChatId(null);
       setLoading(false);
     })();
-  }, [authUser, setChats, setCurrentChatId, setLoading]);
+  }, [authUser, setChats, setLoading]);
 
   return (
     <div className="bg-white text-gray-900 min-h-screen flex flex-row">
       <Sidebar user={authUser} />
-      {currentChatId ? (
-        <Chat
-          chatUuid={currentChatId}
-        />
-      ) : null}
+      <Chat />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
 import { PlusIcon } from '@heroicons/react/20/solid';
-import * as chatService from '../services/chatService';
 import { useCallback } from 'react';
 
 const ChatList = () => {
@@ -19,9 +18,7 @@ const ChatList = () => {
     if (!authUser) return;
     setLoading(true);
     try {
-      const newChat = await chatService.createChat(authUser.token);
-      setChats([newChat, ...chats]);
-      setCurrentChatId(newChat.id);
+      setCurrentChatId(null);
     } catch (e) {
       // Optionally handle error (e.g., show toast)
       // eslint-disable-next-line no-console

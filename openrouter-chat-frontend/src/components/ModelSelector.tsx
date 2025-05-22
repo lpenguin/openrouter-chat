@@ -1,26 +1,26 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { Listbox, Transition, ListboxOptions, ListboxButton, ListboxOption } from '@headlessui/react';
 import { fetchOpenRouterModels } from '../services/modelService';
 import type { ModelOption } from '../types/model';
-import { useChatStore } from '../store/chatStore';
 
+interface ModelSelectorProps {
+  currentModel: string | null;
+  onModelChange: (model: string) => void;
+}
 
-export default function ModelSelector() {
+export default function ModelSelector({ currentModel, onModelChange }: ModelSelectorProps) {
   const [models, setModels] = useState<ModelOption[]>([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
-  const { getChatById, setChatById, currentChatId } = useChatStore();
-  if (!currentChatId) return null;
-  const chat = getChatById(currentChatId);
-  if (!chat) return null;
+
   useEffect(() => {
     fetchOpenRouterModels().then(ms => {
       setModels(ms);
       console.log('Loaded models:', ms);
     }).catch(() => setModels([]));
 
-    if (chat.model) setSelected(chat.model);
-  }, [chat.model]);
+    setSelected(currentModel);
+  }, [currentModel]);
 
   const filtered = search
     ? models.filter(m => m.name.toLowerCase().includes(search.toLowerCase()) || m.id.toLowerCase().includes(search.toLowerCase()))
@@ -28,7 +28,7 @@ export default function ModelSelector() {
 
   const handleSelect = (model: string) => {
     setSelected(model);
-    setChatById(chat.id, { ...chat, model });
+    onModelChange(model);
   };
 
   const selectedModel = models.find(m => m.id === selected) || null;

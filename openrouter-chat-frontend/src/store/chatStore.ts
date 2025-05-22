@@ -1,18 +1,21 @@
 import { create } from 'zustand';
-import { Chat, Message } from '../schemas/chatSchema';
+import { Chat, Message } from '../types/chat';
+
 
 interface ChatState {
   chats: Chat[];
   currentChatId: string | null;
   messages: Message[];
   loading: boolean;
+  addChat: (chat: Chat) => void;
   setChats: (chats: Chat[]) => void;
   getChatById: (id: string) => Chat | null;
   setChatById: (id: string, chat: Chat) => void;
-  setCurrentChatId: (id: string | null) => void;
+  setCurrentChatId: (currentChatId: string | null) => void;
   setMessages: (messages: Message[]) => void;
   setLoading: (loading: boolean) => void;
   addMessage: (message: Message) => void;
+  replaceChat: (chatId: string, chat: Chat) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -34,4 +37,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setMessages: (messages) => set({ messages }),
   setLoading: (loading) => set({ loading }),
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+  replaceChat: (chatId, chat) => set((state) => ({
+    chats: state.chats.map((c) => (c.id === chatId ? chat : c)),
+  })),
+  addChat: (chat) => set((state) => ({ chats: [...state.chats, chat]  })),
 }));

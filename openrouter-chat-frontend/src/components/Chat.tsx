@@ -1,79 +1,130 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ModelSelector from './ModelSelector';
 import ChatInput from './ChatInput';
 import ChatBubble from './ChatBubble';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
 import * as chatService from '../services/chatService';
-import { Message } from '../schemas/chatSchema';
+import { Message } from '../types/chat';
 
-interface ChatProps {
-  chatUuid: string;
-}
+// Dummy stub for loading state
+const loadingStub: Message[] = [
+  { id: 'stub-1', role: 'user' as 'user', content: 'Loading...', },
+  { id: 'stub-2', role: 'assistant' as 'assistant', content: 'Loading...', model: '' },
+];
 
-const Chat: React.FC<ChatProps> = ({ chatUuid }) => {
+export default () => {
   const authUser = useAuthStore((state) => state.authUser);
   if (!authUser) return (
     <div className="flex items-center justify-center h-screen">
       <p className="text-gray-500">Please log in to access the chat.</p>
     </div>
   );
-  const { messages, setMessages, addMessage, loading, setLoading , getChatById} = useChatStore();
+  const {
+    getChatById,
+    setCurrentChatId,
+    currentChatId,
+    addChat,    
+  } = useChatStore();
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [assistantMessageLoading, setAssistantMessageLoading] = useState(false);
-  const chat = getChatById(chatUuid);
-  if (!chat) return null;
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [model, setModel] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Dummy stub for loading state
-  const loadingStub = [
-    { id: 'stub-1', role: 'user' as 'user', content: 'Loading...', chat_id: chatUuid, model: null, provider: null, user_id: 0, created_at: '', updated_at: '' },
-    { id: 'stub-2', role: 'assistant' as 'assistant', content: 'Loading...', chat_id: chatUuid, model: null, provider: null, user_id: 0, created_at: '', updated_at: '' },
-  ];
+  const createRealChatFromTemp = async () => {
+    // Create real chat on server with temp messages
+    const realChat = await chatService.createChat(authUser.token);
+    
+    // Update store with real chat
+    addChat(realChat);
+    setCurrentChatId(realChat.id);
+    return realChat.id;
+  };
 
-  // Load messages when chatUuid changes
+
   useEffect(() => {
-    if (!chatUuid) return;
-    (async () => {
-      setLoading(true);
-      const msgs = await chatService.getMessages(chatUuid, authUser.token);
-      setMessages(msgs);
-      setLoading(false);
-    })();
-  }, [chatUuid, setMessages, setLoading]);
+    if (currentChatId) {
+      const currentChat = getChatById(currentChatId);
+      if (currentChat) {
+        setModel(currentChat.model);
+      }
+    } else {
+      setModel('openai/gpt-3.5-turbo');
+    }
+  }, [currentChatId]);
+
+  useEffect(() => {
+    if (isTransitioning) return;
+    {
+      (async () => {
+        if (currentChatId !== null) {
+          setLoading(true);
+          const msgs = await chatService.getMessages(currentChatId, authUser.token);
+          setMessages(msgs);
+          setLoading(false);
+        } else {
+          setMessages([]);
+        }
+      })();
+    }
+  }, [currentChatId]);
 
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages.length]);
+  }, [messages]);
+
+  const addMessage = (message: Message) => {
+    setMessages((prevMessages) => [...prevMessages, message]);
+  };
 
   const handleSend = async (content: string) => {
-    if (!chatUuid || !content.trim() || !authUser) return;
-    setAssistantMessageLoading(true);
+    if (!content.trim() || !authUser) return;
+
     // Add user message to store immediately
     const userMsg = {
       id: `${Date.now()}-user`,
-      chat_id: chatUuid,
       role: 'user' as 'user',
       content,
-      model: null,
-      provider: null,
-      user_id: authUser.user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
+
     addMessage(userMsg);
+    setAssistantMessageLoading(true);
+
+    let chatId;
+    if (currentChatId) {
+      chatId = currentChatId;
+    } else {
+      setIsTransitioning(true);
+      try {
+        chatId = await createRealChatFromTemp();
+      } catch (e) {
+        throw e;
+      } finally {
+        setIsTransitioning(false);
+      }
+    }    
+
     // Send to backend and add assistant message to store
-    const assistantMsg = await chatService.sendMessageToChat({ chatId: chatUuid, content, model: chat.model, token: authUser.token });
+    const assistantMsg = await chatService.sendMessageToChat({ chatId, content, model: model!!, token: authUser.token });
     addMessage(assistantMsg);
     setAssistantMessageLoading(false);
   };
 
+  const handleModelChange = (model: string) => {
+    setModel(model);
+  };
   return (
     <div className="h-screen w-screen">
       {/* Model Selector at top where the panel used to be */}
       <div className="absolute">
-        <ModelSelector />
+        <ModelSelector
+          currentModel={model}
+          onModelChange={handleModelChange}
+         />
       </div>
       <div className="flex flex-col h-screen">
         {/* ChatMessages - Scrollable area */}
@@ -104,4 +155,3 @@ const Chat: React.FC<ChatProps> = ({ chatUuid }) => {
   );
 };
 
-export default Chat;

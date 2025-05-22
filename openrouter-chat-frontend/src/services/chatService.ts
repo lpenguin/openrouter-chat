@@ -1,5 +1,6 @@
-import { ChatSchema, MessageSchema, Chat, Message } from '../schemas/chatSchema';
+import { ChatSchema, MessageSchema } from '../schemas/chatSchema';
 import { z } from 'zod';
+import { Chat, Message } from '../types/chat';
 
 const API = '/api';
 
@@ -17,7 +18,7 @@ export async function createChat(token: string): Promise<Chat> {
   return ChatSchema.parse(data.chat);
 }
 
-export async function listChats(token: string): Promise<Chat[]> {
+export async function getChats(token: string): Promise<Chat[]> {
   const res = await fetch(`${API}/chats`, {
     headers: { 'Authorization': `Bearer ${token}` },
   });

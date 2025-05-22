@@ -1,28 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { loginApi, registerApi } from '../services/authService';
-import { getUser, setUser } from '../services/userService';
-import type { AuthUser } from '../schemas/authUserSchema';
 
 export default function AuthGate({ children }: { children?: React.ReactNode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUserState] = useState<AuthUser | null>(null);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const setAuthUser = useAuthStore(state => state.setAuthUser);
 
-  // Persist user session in localStorage
-  useEffect(() => {
-    const stored = getUser();
-    if (stored) {
-      setUserState(stored);
-      setAuthUser(stored);
-    } else {
-      setAuthUser(null);
-    }
-  }, [setAuthUser, setUser]);
+  const { authUser, setAuthUser } = useAuthStore();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,9 +19,7 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
       const data = mode === 'login'
         ? await loginApi(email, password)
         : await registerApi(email, password);
-      setUserState(data);
       setAuthUser(data);
-      setUser(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -42,7 +27,7 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
     }
   }
 
-  if (!user) {
+  if (!authUser) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-80 flex flex-col gap-4">
