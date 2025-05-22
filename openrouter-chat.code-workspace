@@ -12,7 +12,7 @@
 	],
 	"settings": {
 		"editor.tabSize": 2,
-		"window.zoomLevel": 1,
+		"window.zoomLevel": 0,
 		"editor.quickSuggestions": {
 			"strings": "on"
 		}
