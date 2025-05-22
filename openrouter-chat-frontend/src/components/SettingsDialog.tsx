@@ -113,7 +113,7 @@ export default function SettingsDialog({ open, onClose }: {
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
-                    className="px-4 py-2 rounded bg-theme-surface text-theme-primary hover:bg-theme-background border border-theme"
+                    className="px-4 py-2 rounded bg-theme-surface text-theme-primary hover:bg-theme-background border border-theme cursor-pointer"
                     onClick={onClose}
                     disabled={saving}
                   >
@@ -121,7 +121,7 @@ export default function SettingsDialog({ open, onClose }: {
                   </button>
                   <button
                     type="button"
-                    className="px-4 py-2 rounded bg-theme-primary text-white hover:bg-theme-success"
+                    className="px-4 py-2 rounded bg-theme-primary text-white hover:bg-theme-success cursor-pointer"
                     onClick={handleSave}
                     disabled={saving}
                   >

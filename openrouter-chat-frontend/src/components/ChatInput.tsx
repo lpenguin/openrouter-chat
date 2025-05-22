@@ -34,7 +34,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           disabled={disabled}
         />
         <button
-          className="bg-theme-primary hover:bg-theme-success text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow"
+          className="bg-theme-primary hover:bg-theme-success text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow cursor-pointer"
           onClick={handleSend}
           disabled={disabled || !value.trim()}
         >

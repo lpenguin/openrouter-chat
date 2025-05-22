@@ -1,4 +1,7 @@
 import React from 'react';
+import Markdown from 'react-markdown';
+import CodeBlock from './CodeBlock';
+
 
 interface ChatBubbleProps {
   content: string;
@@ -9,8 +12,24 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
   if (role === 'assistant') {
     // Agent message: just padded text, full width
     return (
-      <div className="text-left text-[16px] text-theme-primary w-full p-2">
-        {content}
+      <div className="text-left text-[16px] text-theme-primary w-full p-2 markdown">
+        <Markdown
+          children={content}
+          components={{
+            code({children, className}) {
+              const match = /language-(\w+)/.exec(className || '')
+              const codeString = String(children).replace(/\n$/, '')
+              if (match) {
+                return <CodeBlock code={codeString} language={match[1]} />
+              }
+              return (
+                <code className={className}>
+                  {children}
+                </code>
+              )
+            }
+        }}
+          />
       </div>
     );
   }
@@ -19,7 +38,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
     <div className="flex justify-end my-1">
       <div className="bg-theme-surface rounded-lg p-2 max-w-xs border border-theme">
         <span className="text-theme-primary text-[16px]">
-          {content}
+          <Markdown>{content}</Markdown>
         </span>
       </div>
     </div>
