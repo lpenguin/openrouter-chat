@@ -2,6 +2,7 @@ import React from 'react';
 import Markdown from 'react-markdown';
 import CodeBlock from './CodeBlock';
 import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks';
 
 interface ChatBubbleProps {
   content: string;
@@ -30,7 +31,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
               )
             }
         }}
-          />
+        />
       </div>
     );
   }
@@ -39,7 +40,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ content, role }) => {
     <div className="flex justify-end my-1">
       <div className="bg-theme-surface rounded-lg p-2 max-w-xs border border-theme">
         <span className="text-[16px]">
-          <Markdown>{content}</Markdown>
+          <Markdown remarkPlugins={[remarkBreaks]}>{content}</Markdown>
         </span>
       </div>
     </div>
