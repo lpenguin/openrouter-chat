@@ -144,10 +144,10 @@ export default () => {
           </div>
         </div>
         {/* SendButton - Fixed at bottom */}
-        <div className="w-full border-t border-gray-200 bg-white sticky bottom-0 z-10">
+        <div className="w-full bg-gradient-to-b from-white/80 to-transparent sticky bottom-0 z-10">
           <ChatInput
             onSend={handleSend}
-            disabled={loading || assistantMessageLoading}
+            sendDisabled={loading || assistantMessageLoading}
           />
         </div>
       </div>
