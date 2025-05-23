@@ -83,11 +83,11 @@ const ChatList = () => {
         {chats.map((chat) => (
           <li
             key={chat.id}
-            className={`group flex items-center px-4 py-2 rounded cursor-pointer transition-colors relative ${
-              chat.id === currentChatId
-                ? 'bg-theme-surface text-theme-primary font-semibold border border-theme'
-                : 'hover:bg-theme-surface text-theme-primary'
-            }`}
+            className={`group flex items-center px-4 py-2 rounded cursor-pointer transition-colors relative hover:bg-theme-surface-200
+              ${chat.id === currentChatId
+                ? 'bg-theme-surface-300 hover:bg-theme-surface-300 text-theme-primary font-semibold'
+                : 'text-theme-primary'}
+            `}
             // Only select chat if not clicking menu or editing
             onClick={e => {
               if (editingId !== chat.id && !(e.target as HTMLElement).closest('.chat-menu')) {
