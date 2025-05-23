@@ -58,3 +58,18 @@ export async function setChatModel(chatId: string, model: string) {
   await db.update(chats).set({ model, updated_at: now }).where(eq(chats.id, chatId));
   return { id: chatId, model, updated_at: now };
 }
+
+export async function renameChat(chatId: string, name: string) {
+  const now = new Date();
+  const updated = await db.update(chats)
+    .set({ name, updated_at: now })
+    .where(eq(chats.id, chatId))
+    .returning();
+  return updated[0];
+}
+
+export async function deleteChat(chatId: string) {
+  // Delete messages first due to FK constraint
+  await db.delete(messages).where(eq(messages.chat_id, chatId));
+  await db.delete(chats).where(eq(chats.id, chatId));
+}

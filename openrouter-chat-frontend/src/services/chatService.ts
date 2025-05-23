@@ -54,3 +54,29 @@ export async function sendMessageToChat({ chatId, content, model, token }: {
   if (!res.ok) throw new Error(data.error || 'Failed to send message');
   return MessageSchema.parse(data.message);
 }
+
+export async function renameChat(chatId: string, name: string, token: string): Promise<Chat> {
+  const res = await fetch(`${API}/chat/${chatId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to rename chat');
+  return ChatSchema.parse(data.chat);
+}
+
+export async function deleteChat(chatId: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/chat/${chatId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to delete chat');
+  if (!data.success) throw new Error('Failed to delete chat');
+}

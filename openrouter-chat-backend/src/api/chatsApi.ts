@@ -10,12 +10,18 @@ import {
   insertMessage,
   getMessagesForChat,
   setChatModel,
+  renameChat,
+  deleteChat,
 } from '../services/chatService';
 
 
 const postMessageSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   model: z.string().min(1, 'Model is required'),
+});
+
+const renameChatSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
 });
 
 
@@ -92,6 +98,40 @@ router.get('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<voi
   }
   const chatMessages = await getMessagesForChat(uuid);
   res.json({ messages: chatMessages });
+});
+
+// PUT /chat/:uuid - rename chat
+router.put('/chat/:uuid', authMiddleware, async (req, res): Promise<void> => {
+  // @ts-ignore
+  const user = req.user;
+  const { uuid } = req.params;
+  const parseResult = renameChatSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    res.status(400).json({ error: parseResult.error.errors[0].message });
+    return;
+  }
+  const { name } = parseResult.data;
+  const chat = await getChatById(uuid);
+  if (!chat || chat.user_id !== user.id) {
+    res.status(404).json({ error: 'Chat not found' });
+    return;
+  }
+  const updatedChat = await renameChat(uuid, name.trim());
+  res.json({ chat: updatedChat });
+});
+
+// DELETE /chat/:uuid - delete chat
+router.delete('/chat/:uuid', authMiddleware, async (req, res): Promise<void> => {
+  // @ts-ignore
+  const user = req.user;
+  const { uuid } = req.params;
+  const chat = await getChatById(uuid);
+  if (!chat || chat.user_id !== user.id) {
+    res.status(404).json({ error: 'Chat not found' });
+    return;
+  }
+  await deleteChat(uuid);
+  res.json({ success: true });
 });
 
 export default router;
