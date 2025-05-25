@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function LogoutButton() {
   function handleLogout() {
     localStorage.removeItem('user');

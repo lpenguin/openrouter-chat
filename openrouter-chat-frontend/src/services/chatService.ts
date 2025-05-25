@@ -36,19 +36,24 @@ export async function getMessages(chatId: string, token: string): Promise<Messag
   return z.array(MessageSchema).parse(data.messages);
 }
 
-export async function sendMessageToChat({ chatId, content, model, token }: {
+export async function sendMessageToChat({ chatId, content, model, token, attachments }: {
   chatId: string,
   content: string,
   model: string,
   token: string,
+  attachments?: { filename: string; mimetype: string; data: string }[],
 }): Promise<Message> {
+  const body: any = { content, model };
+  if (attachments && attachments.length > 0) {
+    body.attachments = attachments;
+  }
   const res = await fetch(`${API}/chat/${chatId}/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ content, model }),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to send message');

@@ -1,9 +1,9 @@
 import { db, chats, messages } from '../db';
 import { eq, desc } from 'drizzle-orm';
-import { randomUUID } from 'crypto';
 import { getUserSettings } from './settingsService';
+import { attachments, DbInsertAttachment, DbInsertMessage, DbSelectAttachment, DbSelectChat, DbSelectMessage } from '../db/schema';
 
-export async function createChat({ userId }: { userId: number }): Promise<typeof chats.$inferSelect> {
+export async function createChat({ userId }: { userId: number }): Promise<DbSelectChat> {
   const now = new Date();
   const userSettings = await getUserSettings(userId);
   const model = userSettings.defaultModel ?? 'openai/gpt-3.5-turbo';
@@ -25,31 +25,21 @@ export async function getChatById(chatId: string) {
   return chatArr[0];
 }
 
-export async function insertMessage({ chatId, userId, role, content, model, provider }: {
-  chatId: string,
-  userId: number,
-  role: 'user' | 'assistant',
-  content: string,
-  model?: string | null,
-  provider?: string | null,
-}): Promise<typeof messages.$inferInsert> {
-  const now = new Date();
-  const msgId = randomUUID();
-  await db.insert(messages).values({
-    id: msgId,
-    chat_id: chatId,
-    user_id: userId,
-    role,
-    content,
-    model: model ?? null,
-    provider: provider ?? null,
-    created_at: now,
-    updated_at: now,
-  });
-  return { id: msgId, chat_id: chatId, user_id: userId, role, content, model, provider, created_at: now, updated_at: now };
+export async function insertMessage(message: DbInsertMessage): Promise<DbSelectMessage> {
+  const [msg] = await db.insert(messages).values(message).returning();
+  return msg;
 }
 
-export async function getMessagesForChat(chatId: string) {
+export async function insertAttachments(atts: DbInsertAttachment[]): Promise<number[]> {
+  if (atts.length === 0) return [];
+  return (await db.insert(attachments).values(atts).returning()).map(m => m.id);
+}
+
+export async function getAttachmentsForMessage(messageId: string): Promise<DbSelectAttachment[]> {
+  return db.select().from(attachments).where(eq(attachments.message_id, messageId)).orderBy(attachments.created_at);
+}
+
+export async function getMessagesForChat(chatId: string): Promise<DbSelectMessage[]> {
   return db.select().from(messages).where(eq(messages.chat_id, chatId)).orderBy(messages.created_at);
 }
 

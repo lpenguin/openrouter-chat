@@ -36,8 +36,8 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
   return (
     <div className="w-full max-w-60 ml-5">
       <Listbox value={selected} onChange={handleSelect}>
-        <div className="relative mt-1">
-          <ListboxButton className="relative w-full cursor-pointer rounded-lg bg-theme-surface py-2 pl-3 pr-10 text-left shadow-md border border-theme focus:outline-none focus:ring-0 focus:border-theme sm:text-sm flex items-center gap-2 transition-colors duration-150">
+        <div className="relative mt-1 z-20">
+          <ListboxButton className="z-100 relative w-full cursor-pointer rounded-lg bg-theme-surface py-2 pl-3 pr-10 text-left shadow-md border border-theme focus:outline-none focus:ring-0 focus:border-theme sm:text-sm flex items-center gap-2 transition-colors duration-150">
             <svg className="w-5 h-5 text-theme-secondary mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
             </svg>
@@ -54,7 +54,7 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
             afterLeave={() => setSearch('')}
           >
             {open => open && (
-              <ListboxOptions className="absolute z-10 mt-1 w-[16rem] min-w-[14rem] rounded-lg bg-theme-surface py-1 text-base shadow-lg border border-theme focus:outline-none focus:ring-0 focus:border-theme sm:text-sm transition-colors duration-150">
+              <ListboxOptions className="absolute z-100 mt-1 w-[16rem] min-w-[14rem] rounded-lg bg-theme-surface py-1 text-base shadow-lg border border-theme focus:outline-none focus:ring-0 focus:border-theme sm:text-sm transition-colors duration-150">
                 {/* Search panel (not scrollable) */}
                 <div className="px-2 py-1 border-b border-theme bg-theme-surface sticky top-0 z-10">
                   <input

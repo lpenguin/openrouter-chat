@@ -11,12 +11,16 @@ export const ChatSchema = z.object({
 
 const BaseMessageSchema = z.object({
   id: z.string().uuid(),
-  chat_id: z.string().uuid(),
-  user_id: z.number(),
   role: z.enum(['user', 'assistant']),
-  created_at: z.string().or(z.date()),
-  updated_at: z.string().or(z.date()),
   content: z.string(),
+  createdAt: z.string().or(z.date()),
+  updatedAt: z.string().or(z.date()),
+  attachments: z.array(
+    z.object({
+      filename: z.string(),
+      mimetype: z.string(),
+    })
+  ).optional(),
 });
 
 export const UserMessageSchema = BaseMessageSchema.extend({

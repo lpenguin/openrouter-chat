@@ -81,14 +81,15 @@ export default () => {
     setMessages((prevMessages) => [...prevMessages, message]);
   };
 
-  const handleSend = async (content: string) => {
-    if (!content.trim() || !authUser) return;
+  const handleSend = async (content: string, attachments?: { filename: string; mimetype: string; data: string }[]) => {
+    if ((!content.trim() && (!attachments || attachments.length === 0)) || !authUser) return;
 
     // Add user message to store immediately
     const userMsg = {
       id: `${Date.now()}-user`,
       role: 'user' as 'user',
       content,
+      // Optionally, you could add attachments here for local echo
     };
 
     addMessage(userMsg);
@@ -106,10 +107,16 @@ export default () => {
       } finally {
         setIsTransitioning(false);
       }
-    }    
+    }
 
     // Send to backend and add assistant message to store
-    const assistantMsg = await chatService.sendMessageToChat({ chatId, content, model: model!!, token: authUser.token });
+    const assistantMsg = await chatService.sendMessageToChat({
+      chatId,
+      content,
+      model: model!!,
+      token: authUser.token,
+      attachments,
+    });
     addMessage(assistantMsg);
     setAssistantMessageLoading(false);
   };
