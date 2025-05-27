@@ -1,0 +1,20 @@
+{
+  "presets": [
+    ["@babel/preset-env", { "modules": false }],
+    "@babel/preset-typescript"
+  ],
+  "plugins": [
+    [
+      "babel-plugin-add-import-extension",
+      {
+        "extension": "js",
+        "exclude": [
+          "^(?![./])" // Exclude bare imports (node_modules)
+        ]
+      }
+    ]
+  ],
+  "ignore": [
+    "node_modules"
+  ]
+}
