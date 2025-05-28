@@ -17,6 +17,7 @@ const BaseMessageSchema = z.object({
   updatedAt: z.string().or(z.date()),
   attachments: z.array(
     z.object({
+      id: z.number(),
       filename: z.string(),
       mimetype: z.string(),
     })

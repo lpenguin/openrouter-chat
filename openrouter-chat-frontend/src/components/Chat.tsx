@@ -89,7 +89,12 @@ export default () => {
       id: `${Date.now()}-user`,
       role: 'user' as 'user',
       content,
-      // Optionally, you could add attachments here for local echo
+      attachments: attachments?.map(att => ({
+        // No ID for local echo - will be assigned by server
+        filename: att.filename,
+        mimetype: att.mimetype,
+        data: att.data
+      }))
     };
 
     addMessage(userMsg);
@@ -142,6 +147,7 @@ export default () => {
                 key={msg.id}
                 content={msg.content}
                 role={msg.role}
+                attachments={msg.attachments}
               />
             )}
             {assistantMessageLoading && !loading && (

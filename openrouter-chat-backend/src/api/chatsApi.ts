@@ -51,6 +51,7 @@ const MessageDtoSchema = z.object({
   provider: z.string().optional(),
   attachments: z.array(
     z.object({
+      id: z.number(),
       filename: z.string(),
       mimetype: z.string(),
     })
@@ -180,6 +181,7 @@ function dbMessageToMessageDto(dbMessage: DbSelectMessage, dbAttachments?: DbSel
   };
   if (dbAttachments && dbAttachments.length > 0) {
     messageDto.attachments = dbAttachments.map(att => ({
+      id: att.id,
       filename: att.filename,
       mimetype: att.mimetype,
     }));
