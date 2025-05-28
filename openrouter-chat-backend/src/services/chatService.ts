@@ -1,5 +1,5 @@
 import { db, chats, messages } from '../db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, inArray } from 'drizzle-orm';
 import { getUserSettings } from './settingsService';
 import { attachments, DbInsertAttachment, DbInsertMessage, DbSelectAttachment, DbSelectChat, DbSelectMessage } from '../db/schema';
 
@@ -59,7 +59,20 @@ export async function renameChat(chatId: string, name: string) {
 }
 
 export async function deleteChat(chatId: string) {
-  // Delete messages first due to FK constraint
+  // First get all message IDs for this chat
+  const messageIds = await db.select({ id: messages.id })
+    .from(messages)
+    .where(eq(messages.chat_id, chatId));
+  
+  // Delete attachments for all messages in this chat
+  if (messageIds.length > 0) {
+    await db.delete(attachments)
+      .where(inArray(attachments.message_id, messageIds.map(m => m.id)));
+  }
+  
+  // Delete messages for this chat
   await db.delete(messages).where(eq(messages.chat_id, chatId));
+  
+  // Delete the chat itself
   await db.delete(chats).where(eq(chats.id, chatId));
 }
