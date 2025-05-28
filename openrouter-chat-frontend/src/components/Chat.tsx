@@ -34,8 +34,8 @@ export default () => {
   const [loading, setLoading] = useState(false);
 
   const createRealChatFromTemp = async () => {
-    // Create real chat on server with temp messages
-    const realChat = await chatService.createChat(authUser.token);
+    // Create real chat on server with the currently selected model
+    const realChat = await chatService.createChat(authUser.token, model || undefined);
     
     // Update store with real chat
     addChat(realChat);

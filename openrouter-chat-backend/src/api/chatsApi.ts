@@ -22,6 +22,11 @@ const RenameChatSchema = z.object({
   name: z.string().min(1, 'Name is required'),
 });
 
+// Define schema for creating a chat
+const CreateChatSchema = z.object({
+  model: z.string().optional(),
+});
+
 // Define Zod schema and type for attachments
 export const AttachmentSchema = z.object({
   filename: z.string(),
@@ -189,7 +194,14 @@ router.post('/chats', authMiddleware, async (req, res): Promise<void> => {
   // @ts-ignore
   const user = req.user;
 
-  const chat = await createChat({ userId: user.id });
+  const parseResult = CreateChatSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    res.status(400).json({ error: parseResult.error.errors[0].message });
+    return;
+  }
+  const { model } = parseResult.data;
+
+  const chat = await createChat({ userId: user.id, model });
   res.json({ chat });
 });
 

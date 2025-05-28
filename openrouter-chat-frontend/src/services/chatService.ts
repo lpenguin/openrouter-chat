@@ -4,14 +4,15 @@ import { Chat, Message } from '../types/chat';
 
 const API = '/api';
 
-export async function createChat(token: string): Promise<Chat> {
+export async function createChat(token: string, model?: string): Promise<Chat> {
+  const body = model ? { model } : {};
   const res = await fetch(`${API}/chats`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to create chat');

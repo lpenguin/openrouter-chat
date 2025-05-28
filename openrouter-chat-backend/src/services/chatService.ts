@@ -3,13 +3,13 @@ import { eq, desc, and, inArray } from 'drizzle-orm';
 import { getUserSettings } from './settingsService';
 import { attachments, DbInsertAttachment, DbInsertMessage, DbSelectAttachment, DbSelectChat, DbSelectMessage } from '../db/schema';
 
-export async function createChat({ userId }: { userId: number }): Promise<DbSelectChat> {
+export async function createChat({ userId, model }: { userId: number; model?: string }): Promise<DbSelectChat> {
   const now = new Date();
   const userSettings = await getUserSettings(userId);
-  const model = userSettings.defaultModel ?? 'openai/gpt-3.5-turbo';
+  const finalModel = model ?? userSettings.defaultModel ?? 'openai/gpt-3.5-turbo';
   const resultChats = await db.insert(chats).values({
     user_id: userId,
-    model,
+    model: finalModel,
     created_at: now,
     updated_at: now,
   }).returning();
