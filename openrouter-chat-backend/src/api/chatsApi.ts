@@ -25,6 +25,7 @@ const RenameChatSchema = z.object({
 // Define schema for creating a chat
 const CreateChatSchema = z.object({
   model: z.string().optional(),
+  chatNameContent: z.string().optional(), // New optional parameter
 });
 
 // Define Zod schema and type for attachments
@@ -229,9 +230,35 @@ router.post('/chats', authMiddleware, async (req, res): Promise<void> => {
     res.status(400).json({ error: parseResult.error.errors[0].message });
     return;
   }
-  const { model } = parseResult.data;
+  const { model, chatNameContent } = parseResult.data;
 
-  const chat = await createChat({ userId: user.id, model });
+  let chatName: string | undefined = undefined;
+  if (chatNameContent) {
+    // Get user OpenRouter API key
+    const settings = await getUserSettings(user.id);
+    const apiKey = settings?.operouter?.token;
+    if (!apiKey) {
+      res.status(400).json({ error: 'No OpenRouter API key in user settings' });
+      return;
+    }
+    // Use OpenRouter to guess chat name
+    try {
+      const nameResponse = await getOpenRouterCompletion({
+        messages: [
+          { role: 'user', content: 'Suggest a short, descriptive chat title for this conversation:' },
+          { role: 'user', content: chatNameContent }
+        ],
+        model: model || 'gpt-3.5-turbo',
+        apiKey,
+      });
+      chatName = (typeof nameResponse.content === 'string') ? nameResponse.content.trim() : undefined;
+    } catch (err) {
+      // fallback: ignore error, create chat without name
+      chatName = undefined;
+    }
+  }
+
+  const chat = await createChat({ userId: user.id, model, name: chatName });
   res.json({ chat });
 });
 

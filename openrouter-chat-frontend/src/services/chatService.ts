@@ -4,8 +4,9 @@ import { Chat, Message } from '../types/chat';
 
 const API = '/api';
 
-export async function createChat(token: string, model?: string): Promise<Chat> {
-  const body = model ? { model } : {};
+export async function createChat(token: string, model?: string, chatNameContent?: string): Promise<Chat> {
+  const body: any = model ? { model } : {};
+  if (chatNameContent) body.chatNameContent = chatNameContent;
   const res = await fetch(`${API}/chats`, {
     method: 'POST',
     headers: {

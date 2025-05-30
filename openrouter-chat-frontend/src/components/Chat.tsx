@@ -33,11 +33,13 @@ export default () => {
   const [model, setModel] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const createRealChatFromTemp = async () => {
-    // Create real chat on server with the currently selected model
-    const realChat = await chatService.createChat(authUser.token, model || undefined);
-    
-    // Update store with real chat
+  const createRealChatFromTemp = async (firstMessageContent?: string) => {
+    // Create real chat on server with the currently selected model and optional chatNameContent
+    const realChat = await chatService.createChat(authUser.token, model || undefined, firstMessageContent);
+    // Remove quotes from the chat name if present
+    if (realChat.name) {
+      realChat.name = realChat.name.replace(/^"|"$/g, '').trim();
+    }
     addChat(realChat);
     setCurrentChatId(realChat.id);
     return realChat.id;
@@ -106,7 +108,8 @@ export default () => {
     } else {
       setIsTransitioning(true);
       try {
-        chatId = await createRealChatFromTemp();
+        // Pass the first message content for chat name suggestion
+        chatId = await createRealChatFromTemp(content);
       } catch (e) {
         throw e;
       } finally {
