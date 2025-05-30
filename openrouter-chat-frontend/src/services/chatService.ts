@@ -37,16 +37,20 @@ export async function getMessages(chatId: string, token: string): Promise<Messag
   return z.array(MessageSchema).parse(data.messages);
 }
 
-export async function sendMessageToChat({ chatId, content, model, token, attachments }: {
+export async function sendMessageToChat({ chatId, content, model, token, attachments, useSearch }: {
   chatId: string,
   content: string,
   model: string,
   token: string,
   attachments?: { filename: string; mimetype: string; data: string }[],
+  useSearch?: boolean,
 }): Promise<Message> {
   const body: any = { content, model };
   if (attachments && attachments.length > 0) {
     body.attachments = attachments;
+  }
+  if (useSearch) {
+    body.useSearch = true;
   }
   const res = await fetch(`${API}/chat/${chatId}/messages`, {
     method: 'POST',

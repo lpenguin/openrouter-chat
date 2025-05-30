@@ -31,6 +31,15 @@ export const AssistantMessageSchema = BaseMessageSchema.extend({
   role: z.literal('assistant'),
   model: z.string(),
   provider: z.string(),
+  searchAnnotations: z.array(z.object({
+    url: z.string().url(),
+    faviconUrl: z.string().url().optional(),
+    citation: z.string().optional(),
+    title: z.string().optional(),
+    content: z.string().optional(),
+    startIndex: z.number().optional(),
+    endIndex: z.number().optional(),
+  })).optional(),
 });
 
 export const MessageSchema = z.discriminatedUnion('role', [

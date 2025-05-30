@@ -59,24 +59,32 @@ export async function getOpenRouterCompletionWithAttachments({
   messages,
   model,
   apiKey,
+  useWebSearch = false,
+  webSearchOptions,
 }: {
   messages: OpenRouterRequestMessage[];
   model: string;
   apiKey: string;
+  useWebSearch?: boolean;
+  webSearchOptions?: { search_context_size?: 'low' | 'medium' | 'high' };
 }): Promise<OpenRouterResponseMessage> {
-  const payload = {
+  const payload: any = {
     model,
     messages,
     plugins: [
-    {
-      "id": "file-parser",
-      "pdf": {
-          "engine": "mistral-ocr"
-      }
-    }
-  ]
+      {
+        id: 'file-parser',
+        pdf: { engine: 'mistral-ocr' },
+      },
+    ],
   };
-
+  if (useWebSearch) {
+    // Standard OpenRouter web search plugin
+    payload.plugins.push({ id: 'web' });
+    if (webSearchOptions) {
+      payload.web_search_options = webSearchOptions;
+    }
+  }
   try {
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -97,7 +105,6 @@ export async function getOpenRouterCompletionWithAttachments({
     if (choice?.error) {
       throw new Error(`OpenRouter error: ${choice.error.message}`);
     }
-
     if (!choice?.message) throw new Error('No assistant message in response');
     return choice?.message;
   } catch (error: unknown) {

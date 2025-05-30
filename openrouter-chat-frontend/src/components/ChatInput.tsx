@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { PaperClipIcon, XMarkIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { PaperClipIcon, XMarkIcon, DocumentIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 
 interface Attachment {
   file: File;
@@ -9,7 +9,7 @@ interface Attachment {
 }
 
 interface ChatInputProps {
-  onSend: (content: string, attachments?: { filename: string; mimetype: string; data: string }[]) => void;
+  onSend: (content: string, attachments?: { filename: string; mimetype: string; data: string }[], useSearch?: boolean) => void;
   sendDisabled?: boolean;
 }
 
@@ -19,6 +19,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
   const [value, setValue] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const [useSearch, setUseSearch] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,7 +69,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
         };
       })
     );
-    onSend(value, processed.length > 0 ? processed : undefined);
+    onSend(value, processed.length > 0 ? processed : undefined, useSearch);
     setValue('');
     setAttachments([]);
     if (textareaRef.current) textareaRef.current.focus();
@@ -153,7 +154,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
             ))}
           </div>
         )}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             className="p-2 hover:bg-theme-accent/10 rounded"
@@ -162,6 +163,16 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
             disabled={sendDisabled}
           >
             <PaperClipIcon className="w-6 h-6 text-theme-secondary" />
+          </button>
+          <button
+            type="button"
+            className={`p-2 rounded ${useSearch ? 'bg-theme-primary text-white' : 'hover:bg-theme-accent/10'} transition-colors`}
+            onClick={() => setUseSearch(v => !v)}
+            aria-label={useSearch ? 'Disable web search' : 'Enable web search'}
+            disabled={sendDisabled}
+            title={useSearch ? 'Web search enabled' : 'Enable web search'}
+          >
+            <GlobeAltIcon className="w-6 h-6" />
           </button>
           <input
             type="file"

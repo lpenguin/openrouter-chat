@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ModelSelector from './ModelSelector';
 import ChatInput from './ChatInput';
-import ChatBubble from './ChatBubble';
+import { UserChatBubble, AssistantChatBubble, AssistantMessageWithAnnotations } from './ChatBubble';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
 import * as chatService from '../services/chatService';
@@ -81,7 +81,7 @@ export default () => {
     setMessages((prevMessages) => [...prevMessages, message]);
   };
 
-  const handleSend = async (content: string, attachments?: { filename: string; mimetype: string; data: string }[]) => {
+  const handleSend = async (content: string, attachments?: { filename: string; mimetype: string; data: string }[], useSearch?: boolean) => {
     if ((!content.trim() && (!attachments || attachments.length === 0)) || !authUser) return;
 
     // Add user message to store immediately
@@ -121,6 +121,7 @@ export default () => {
       model: model!!,
       token: authUser.token,
       attachments,
+      useSearch,
     });
     addMessage(assistantMsg);
     setAssistantMessageLoading(false);
@@ -143,12 +144,11 @@ export default () => {
         <div className="flex-1 w-full overflow-y-auto max-w-2xl m-auto">
           <div className="w-full max-w-2xl mx-auto flex flex-col space-y-3 px-4 py-4">
             {(loading ? loadingStub : messages).map((msg: Message) =>
-              <ChatBubble
-                key={msg.id}
-                content={msg.content}
-                role={msg.role}
-                attachments={msg.attachments}
-              />
+              msg.role === 'assistant' ? (
+                <AssistantChatBubble key={msg.id} message={msg as AssistantMessageWithAnnotations} />
+              ) : (
+                <UserChatBubble key={msg.id} message={msg} />
+              )
             )}
             {assistantMessageLoading && !loading && (
               <div className="px-4 py-2 text-gray-500">Assistant is typing...</div>

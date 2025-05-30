@@ -39,6 +39,7 @@ const PostMessageRequestSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   model: z.string().min(1, 'Model is required'),
   attachments: z.array(AttachmentSchema).optional(),
+  useSearch: z.boolean().optional(), // Added for web search support
 });
 
 const MessageDtoSchema = z.object({
@@ -56,6 +57,16 @@ const MessageDtoSchema = z.object({
       mimetype: z.string(),
     })
   ).optional(),
+  // Add searchAnnotations for web search citations
+  searchAnnotations: z.array(z.object({
+    url: z.string().url(),
+    faviconUrl: z.string().url().optional(),
+    citation: z.string().optional(),
+    title: z.string().optional(),
+    content: z.string().optional(),
+    startIndex: z.number().optional(),
+    endIndex: z.number().optional(),
+  })).optional(),
 });
 
 type MessageDto = z.infer<typeof MessageDtoSchema>;
@@ -186,6 +197,23 @@ function dbMessageToMessageDto(dbMessage: DbSelectMessage, dbAttachments?: DbSel
       mimetype: att.mimetype,
     }));
   }
+  // Extract web search annotations if present
+  if (dbMessage.annotations && Array.isArray(dbMessage.annotations)) {
+    const searchAnnotations = dbMessage.annotations
+      .filter((a: any) => a && a.type === 'url_citation' && a.url_citation)
+      .map((a: any) => ({
+        url: a.url_citation.url,
+        faviconUrl: a.url_citation.favicon_url,
+        citation: a.url_citation.citation,
+        title: a.url_citation.title,
+        content: a.url_citation.content,
+        startIndex: a.url_citation.start_index,
+        endIndex: a.url_citation.end_index,
+      }));
+    if (searchAnnotations.length > 0) {
+      messageDto.searchAnnotations = searchAnnotations;
+    }
+  }
   return messageDto;
 }
 
@@ -226,7 +254,7 @@ router.post('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<vo
     res.status(400).json({ error: parseResult.error.errors[0].message });
     return;
   }
-  const { content, model, attachments } = parseResult.data;
+  const { content, model, attachments, useSearch } = parseResult.data;
 
   const chat = await getChatById(uuid);
   if (!chat) {
@@ -282,12 +310,16 @@ router.post('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<vo
   // Add the user message with attachments
   openrouterMessages.push(buildUserOpenRouterMessage(content, attachments));
 
+  // Call OpenRouter with web search if requested
   const assistantMsg = await getOpenRouterCompletion({
     messages: openrouterMessages,
     model,
     apiKey,
+    useWebSearch: !!useSearch,
+    // Optionally, you can add webSearchOptions here if you want to support context size
   });
 
+  // Save assistant message and annotations to DB
   const assistantMsgObj = await insertMessage({
     chat_id: uuid,
     user_id: user.id,
