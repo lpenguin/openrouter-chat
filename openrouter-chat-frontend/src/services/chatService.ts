@@ -1,13 +1,12 @@
 import { ChatSchema, MessageSchema } from '../schemas/chatSchema';
 import { z } from 'zod';
 import { Chat, Message } from '../types/chat';
-
-const API = '/api';
+import { API_BASE_URL } from '../config/api';
 
 export async function createChat(token: string, model?: string, chatNameContent?: string): Promise<Chat> {
   const body: any = model ? { model } : {};
   if (chatNameContent) body.chatNameContent = chatNameContent;
-  const res = await fetch(`${API}/chats`, {
+  const res = await fetch(`${API_BASE_URL}/chats`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -21,7 +20,7 @@ export async function createChat(token: string, model?: string, chatNameContent?
 }
 
 export async function getChats(token: string): Promise<Chat[]> {
-  const res = await fetch(`${API}/chats`, {
+  const res = await fetch(`${API_BASE_URL}/chats`, {
     headers: { 'Authorization': `Bearer ${token}` },
   });
   const data = await res.json();
@@ -30,7 +29,7 @@ export async function getChats(token: string): Promise<Chat[]> {
 }
 
 export async function getMessages(chatId: string, token: string): Promise<Message[]> {
-  const res = await fetch(`${API}/chat/${chatId}/messages`, {
+  const res = await fetch(`${API_BASE_URL}/chat/${chatId}/messages`, {
     headers: { 'Authorization': `Bearer ${token}` },
   });
   const data = await res.json();
@@ -53,7 +52,7 @@ export async function sendMessageToChat({ chatId, content, model, token, attachm
   if (useSearch) {
     body.useSearch = true;
   }
-  const res = await fetch(`${API}/chat/${chatId}/messages`, {
+  const res = await fetch(`${API_BASE_URL}/chat/${chatId}/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -67,7 +66,7 @@ export async function sendMessageToChat({ chatId, content, model, token, attachm
 }
 
 export async function renameChat(chatId: string, name: string, token: string): Promise<Chat> {
-  const res = await fetch(`${API}/chat/${chatId}`, {
+  const res = await fetch(`${API_BASE_URL}/chat/${chatId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -81,7 +80,7 @@ export async function renameChat(chatId: string, name: string, token: string): P
 }
 
 export async function deleteChat(chatId: string, token: string): Promise<void> {
-  const res = await fetch(`${API}/chat/${chatId}`, {
+  const res = await fetch(`${API_BASE_URL}/chat/${chatId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,

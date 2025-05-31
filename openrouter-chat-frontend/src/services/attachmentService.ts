@@ -1,9 +1,8 @@
 import { MessageAttachment } from '../types/chat';
-
-const API = '/api';
+import { API_BASE_URL } from '../config/api';
 
 export async function getAttachmentContent(attachmentId: number, token: string): Promise<Blob> {
-  const res = await fetch(`${API}/attachments/${attachmentId}/content`, {
+  const res = await fetch(`${API_BASE_URL}/attachments/${attachmentId}/content`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -32,7 +31,7 @@ export function openAttachment(attachmentId: number): void {
   // Open attachment in a new tab/window using the existing endpoint
   // Note: The browser will handle auth by including cookies if same-origin,
   // but for proper auth we'd need to pass the token as a query param or use a different approach
-  const url = `${API}/attachments/${attachmentId}/content`;
+  const url = `${API_BASE_URL}/attachments/${attachmentId}/content`;
   window.open(url, '_blank');
 }
 

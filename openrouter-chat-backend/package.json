@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "type": "module",
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "babel src --extensions .ts --out-dir dist --ignore '**/*.test.ts'",

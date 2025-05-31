@@ -1,8 +1,9 @@
 import type { AuthUser } from '../schemas/authUserSchema';
 import { authUserSchema } from '../schemas/authUserSchema';
+import { API_BASE_URL } from '../config/api';
 
 export async function loginApi(email: string, password: string): Promise<AuthUser> {
-  const res = await fetch('/api/login', {
+  const res = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -18,7 +19,7 @@ export async function loginApi(email: string, password: string): Promise<AuthUse
 }
 
 export async function registerApi(email: string, password: string): Promise<AuthUser> {
-  const res = await fetch('/api/register', {
+  const res = await fetch(`${API_BASE_URL}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),

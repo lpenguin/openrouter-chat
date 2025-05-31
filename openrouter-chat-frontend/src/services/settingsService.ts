@@ -1,7 +1,8 @@
 import { settingsSchema, Settings } from '../schemas/settingsSchema';
+import { API_BASE_URL } from '../config/api';
 
 export async function fetchSettings(token: string): Promise<Settings | null> {
-  const res = await fetch('/api/settings', {
+  const res = await fetch(`${API_BASE_URL}/settings`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -17,7 +18,7 @@ export async function fetchSettings(token: string): Promise<Settings | null> {
 }
 
 export async function saveSettings(token: string, settings: Settings): Promise<boolean> {
-  const res = await fetch('/api/settings', {
+  const res = await fetch(`${API_BASE_URL}/settings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

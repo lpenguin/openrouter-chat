@@ -29,8 +29,62 @@
 - OpenRouter for model completions
 - Supabase for backend data and authentication
 - Node.js + Express backend
-- React + Radix UI + Tailwind CSS frontend
-- Hosted on Vercel
+- React + Headless UI + Tailwind CSS frontend
+- Hosted on Railway/Vercel
+
+---
+
+## 🚀 Deployment
+
+### Quick Deploy to Railway
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template)
+
+1. **Fork this repository**
+2. **Connect to Railway** and deploy both services
+3. **Configure environment variables** (see [Railway Deployment Guide](railway-deployment.md))
+4. **Set up database** (PostgreSQL)
+
+For detailed instructions, see [Railway Deployment Guide](railway-deployment.md).
+
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd openrouter-chat
+   ```
+
+2. **Install dependencies**
+   ```bash
+   # Backend
+   cd openrouter-chat-backend
+   npm install
+   
+   # Frontend  
+   cd ../openrouter-chat-frontend
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   # Backend: .env
+   DATABASE_URL=your-postgres-url
+   JWT_SECRET=your-secret-key
+   
+   # Frontend: .env
+   VITE_API_PROXY=http://localhost:3001
+   ```
+
+4. **Start development servers**
+   ```bash
+   # Backend (terminal 1)
+   cd openrouter-chat-backend
+   npm run dev
+   
+   # Frontend (terminal 2)
+   cd openrouter-chat-frontend  
+   npm run dev
+   ```
 
 ---
 

@@ -3,11 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --port $PORT || vite preview",
+    "start": "vite preview --port ${PORT:-4173} --host 0.0.0.0",
     "lint": "eslint .",
     "check": "tsc --noEmit --project tsconfig.app.json"
   },
