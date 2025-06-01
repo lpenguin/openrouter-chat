@@ -13,7 +13,13 @@ const loadingStub: Message[] = [
   { id: 'stub-2', role: 'assistant' as 'assistant', content: 'Loading...', model: '' },
 ];
 
-export default () => {
+interface ChatProps {
+  sidebarVisible: boolean;
+  onToggleSidebar: () => void;
+  isMobile: boolean;
+}
+
+export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: ChatProps) {
   const authUser = useAuthStore((state) => state.authUser);
   if (!authUser) return (
     <div className="flex items-center justify-center h-screen">
@@ -139,13 +145,15 @@ export default () => {
   const chatName = currentChat?.name || null;
 
   return (
-    <div className="h-screen w-screen flex flex-col">
+    <div className={`h-screen flex flex-col ${sidebarVisible ? 'flex-1' : 'w-full'}`}>
       {/* Upper Bar with Model Selector - takes only required height */}
       <UpperBar
         currentModel={model}
         onModelChange={handleModelChange}
         className="w-full bg-theme-surface border-b border-theme shadow-sm p-3 flex items-center justify-between flex-shrink-0"
         chatName={chatName}
+        sidebarVisible={sidebarVisible}
+        onToggleSidebar={onToggleSidebar}
       />
       {/* Chat content container - takes remaining height */}
       <div className="flex flex-col flex-1 min-h-0">

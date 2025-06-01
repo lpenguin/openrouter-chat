@@ -1,22 +1,36 @@
 import ModelSelector from './ModelSelector';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 
 interface UpperBarProps {
   currentModel: string | null;
   onModelChange: (model: string) => void;
   className?: string;
   chatName?: string | null;
+  sidebarVisible: boolean;
+  onToggleSidebar: () => void;
 }
 
 export default function UpperBar({ 
   currentModel, 
   onModelChange,
   className = "",
-  chatName = null
+  chatName = null,
+  sidebarVisible,
+  onToggleSidebar
 }: UpperBarProps) {
   return (
     <div className={className}>
-      {/* Model selector on the left */}
+      {/* Sidebar toggle button and model selector */}
       <div className="flex items-center">
+        {!sidebarVisible && (
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 mr-2 hover:bg-theme-surface-200 rounded-md transition-colors"
+            aria-label="Show sidebar"
+          >
+            <Bars3Icon className="w-6 h-6 text-theme-secondary" />
+          </button>
+        )}
         <ModelSelector
           currentModel={currentModel}
           onModelChange={onModelChange}
