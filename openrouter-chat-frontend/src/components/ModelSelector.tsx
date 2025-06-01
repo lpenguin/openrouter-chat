@@ -34,9 +34,9 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
   const selectedModel = models.find(m => m.id === selected) || null;
 
   return (
-    <div className="w-full max-w-60 ml-5">
+    <div className="w-full max-w-60">
       <Listbox value={selected} onChange={handleSelect}>
-        <div className="relative mt-1 z-20">
+        <div className="relative z-20">
           <ListboxButton className="z-100 relative w-full cursor-pointer rounded-lg bg-theme-surface py-2 pl-3 pr-10 text-left shadow-md border border-theme focus:outline-none focus:ring-0 focus:border-theme sm:text-sm flex items-center gap-2 transition-colors duration-150">
             <svg className="w-5 h-5 text-theme-secondary mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />

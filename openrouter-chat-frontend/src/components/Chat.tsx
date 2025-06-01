@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import ModelSelector from './ModelSelector';
+import UpperBar from './UpperBar';
 import ChatInput from './ChatInput';
 import { UserChatBubble, AssistantChatBubble, AssistantMessageWithAnnotations } from './ChatBubble';
 import { useAuthStore } from '../store/authStore';
@@ -133,18 +133,24 @@ export default () => {
   const handleModelChange = (model: string) => {
     setModel(model);
   };
+
+  // Get current chat name
+  const currentChat = currentChatId ? getChatById(currentChatId) : null;
+  const chatName = currentChat?.name || null;
+
   return (
-    <div className="h-screen w-screen">
-      {/* Model Selector at top where the panel used to be */}
-      <div className="absolute">
-        <ModelSelector
-          currentModel={model}
-          onModelChange={handleModelChange}
-         />
-      </div>
-      <div className="flex flex-col h-screen">
-        {/* ChatMessages - Scrollable area */}
-        <div className="flex-1 w-full overflow-y-auto max-w-2xl m-auto">
+    <div className="h-screen w-screen flex flex-col">
+      {/* Upper Bar with Model Selector - takes only required height */}
+      <UpperBar
+        currentModel={model}
+        onModelChange={handleModelChange}
+        className="w-full bg-theme-surface border-b border-theme shadow-sm p-3 flex items-center justify-between flex-shrink-0"
+        chatName={chatName}
+      />
+      {/* Chat content container - takes remaining height */}
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* ChatMessages - Scrollable area that takes remaining space */}
+        <div className="flex-1 overflow-y-auto">
           <div className="w-full max-w-2xl mx-auto flex flex-col space-y-3 px-4 py-4">
             {(loading ? loadingStub : messages).map((msg: Message) =>
               msg.role === 'assistant' ? (
@@ -160,7 +166,7 @@ export default () => {
           </div>
         </div>
         {/* SendButton - Fixed at bottom */}
-        <div className="w-full bg-gradient-to-b from-white/80 to-transparent sticky bottom-0 z-10">
+        <div className="w-full bg-gradient-to-b from-white/80 to-transparent flex-shrink-0 z-10">
           <ChatInput
             onSend={handleSend}
             sendDisabled={loading || assistantMessageLoading}
