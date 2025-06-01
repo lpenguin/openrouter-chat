@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { setUser } from '../services/userService';
 import { loginApi, registerApi } from '../services/authService';
 
 export default function AuthGate({ children }: { children?: React.ReactNode }) {
@@ -20,6 +21,7 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
         ? await loginApi(email, password)
         : await registerApi(email, password);
       setAuthUser(data);
+      setUser(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
