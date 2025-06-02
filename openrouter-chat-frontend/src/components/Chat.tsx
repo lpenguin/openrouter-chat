@@ -145,7 +145,10 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
   const chatName = currentChat?.name || null;
 
   return (
-    <div className={`h-screen flex flex-col ${sidebarVisible ? 'flex-1' : 'w-full'}`}>
+    <div 
+      className={`h-screen flex flex-col ${sidebarVisible ? 'flex-1' : 'w-full'}`}
+      style={{ minHeight: '-webkit-fill-available' }}  
+    >
       {/* Upper Bar with Model Selector - takes only required height */}
       <UpperBar
         currentModel={model}
