@@ -28,10 +28,10 @@ export default function Sidebar({ user, onClose, isVisible, isMobile }: SidebarP
   return (
     <aside 
       className={`
-        flex flex-col justify-between h-screen bg-theme-surface border-theme transition-all duration-300 ease-in-out overflow-hidden
+        flex flex-col justify-between h-screen bg-theme-surface border-theme transition-all duration-300 ease-in-out overflow-visible
         ${isMobile 
           ? `fixed top-0 left-0 z-50 transform ${isVisible ? 'translate-x-0' : '-translate-x-full'} w-64 border-r shadow-lg ${isVisible ? 'p-4' : 'p-0'}`
-          : `${isVisible ? 'w-56 opacity-100 p-4 border-r shadow-sm' : 'w-0 opacity-0 p-0 border-r-0 shadow-none'}`
+          : `${isVisible ? 'w-56 opacity-100 p-4 border-r shadow-sm z-50' : 'w-0 opacity-0 p-0 border-r-0 shadow-none'}`
         }
       `}
     >
