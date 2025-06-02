@@ -146,21 +146,20 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
 
   return (
     <div 
-      className={`h-screen flex flex-col ${sidebarVisible ? 'flex-1' : 'w-full'}`}
-      style={{ minHeight: '-webkit-fill-available' }}  
+      className={`h-[100svh] flex flex-col ${sidebarVisible ? 'flex-1' : 'w-full'}`}
     >
       {/* Upper Bar with Model Selector - takes only required height */}
       <UpperBar
         currentModel={model}
         onModelChange={handleModelChange}
-        className="w-full bg-theme-surface border-b border-theme shadow-sm p-3 flex items-center justify-between flex-shrink-0"
+        className="w-full bg-white border-b border-theme shadow-sm p-3 flex items-center justify-between flex-shrink-0"
         chatName={chatName}
         sidebarVisible={sidebarVisible}
         onToggleSidebar={onToggleSidebar}
         isMobile={isMobile}
       />
       {/* Chat content container - takes remaining height */}
-      <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* ChatMessages - Scrollable area that takes remaining space */}
         <div className="flex-1 overflow-y-auto">
           <div className="w-full max-w-2xl mx-auto flex flex-col space-y-3 px-4 py-4">
@@ -177,8 +176,8 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
             <div ref={chatEndRef} />
           </div>
         </div>
-        {/* SendButton - Fixed at bottom */}
-        <div className="w-full bg-gradient-to-b from-white/80 to-transparent flex-shrink-0 z-10">
+        {/* ChatInput - Fixed at bottom */}
+        <div className="flex-shrink-0 bg-gradient-to-t from-white via-white/80 to-transparent">
           <ChatInput
             onSend={handleSend}
             sendDisabled={loading || assistantMessageLoading}

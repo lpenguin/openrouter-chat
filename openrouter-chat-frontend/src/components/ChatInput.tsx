@@ -78,7 +78,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!sendDisabled) handleSend();
+      if (!sendDisabled && (value.trim() || attachments.length > 0)) {
+        handleSend();
+      }
     }
   };
 
@@ -154,37 +156,10 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
             ))}
           </div>
         )}
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="p-2 hover:bg-theme-accent/10 rounded"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Attach file"
-            disabled={sendDisabled}
-          >
-            <PaperClipIcon className="w-6 h-6 text-theme-secondary" />
-          </button>
-          <button
-            type="button"
-            className={`p-2 rounded ${useSearch ? 'bg-theme-primary text-white' : 'hover:bg-theme-accent/10'} transition-colors`}
-            onClick={() => setUseSearch(v => !v)}
-            aria-label={useSearch ? 'Disable web search' : 'Enable web search'}
-            disabled={sendDisabled}
-            title={useSearch ? 'Web search enabled' : 'Enable web search'}
-          >
-            <GlobeAltIcon className="w-6 h-6" />
-          </button>
-          <input
-            type="file"
-            accept="application/pdf,image/png,image/jpeg,image/gif,image/webp"
-            multiple
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileChange}
-            tabIndex={-1}
-          />
+        {/* First row: Text input */}
+        <div className="w-full">
           <TextareaAutosize
-            className="flex-1 bg-transparent outline-none text-theme-primary placeholder:text-theme-secondary text-base resize-none py-2"
+            className="w-full bg-transparent outline-none text-theme-primary placeholder:text-theme-secondary text-base resize-none py-2"
             placeholder="Type your message..."
             value={value}
             onChange={e => setValue(e.target.value)}
@@ -192,8 +167,40 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
             minRows={1}
             maxRows={8}
             ref={textareaRef}
-            disabled={sendDisabled}
           />
+        </div>
+        
+        {/* Second row: Buttons */}
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className="p-2 hover:bg-theme-accent/10 rounded"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <PaperClipIcon className="w-6 h-6 text-theme-secondary" />
+            </button>
+            <button
+              type="button"
+              className={`p-2 rounded ${useSearch ? 'bg-theme-primary text-white' : 'hover:bg-theme-accent/10'} transition-colors`}
+              onClick={() => setUseSearch(v => !v)}
+              aria-label={useSearch ? 'Disable web search' : 'Enable web search'}
+              title={useSearch ? 'Web search enabled' : 'Enable web search'}
+            >
+              <GlobeAltIcon className="w-6 h-6" />
+            </button>
+            <input
+              type="file"
+              accept="application/pdf,image/png,image/jpeg,image/gif,image/webp"
+              multiple
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+              tabIndex={-1}
+            />
+          </div>
+          
           <button
             className="bg-theme-primary hover:bg-theme-success text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow cursor-pointer"
             onClick={handleSend}

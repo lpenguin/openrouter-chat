@@ -51,7 +51,7 @@ function App() {
   };
 
   return (
-    <div className="bg-white text-gray-900 min-h-screen relative">
+    <div className="bg-white text-gray-900 relative">
       {/* Mobile backdrop overlay */}
       {isMobile && sidebarVisible && (
         <div 
@@ -61,7 +61,7 @@ function App() {
       )}
       
       {/* Layout container */}
-      <div className="flex flex-row min-h-screen">
+      <div className="flex flex-row min-h-[100svh]">
         <Sidebar 
           user={authUser} 
           onClose={toggleSidebar} 
