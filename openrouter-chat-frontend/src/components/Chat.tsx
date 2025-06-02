@@ -154,6 +154,7 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
         chatName={chatName}
         sidebarVisible={sidebarVisible}
         onToggleSidebar={onToggleSidebar}
+        isMobile={isMobile}
       />
       {/* Chat content container - takes remaining height */}
       <div className="flex flex-col flex-1 min-h-0">

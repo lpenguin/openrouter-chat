@@ -8,6 +8,7 @@ interface UpperBarProps {
   chatName?: string | null;
   sidebarVisible: boolean;
   onToggleSidebar: () => void;
+  isMobile: boolean;
 }
 
 export default function UpperBar({ 
@@ -16,7 +17,8 @@ export default function UpperBar({
   className = "",
   chatName = null,
   sidebarVisible,
-  onToggleSidebar
+  onToggleSidebar,
+  isMobile
 }: UpperBarProps) {
   return (
     <div className={className}>
@@ -38,7 +40,7 @@ export default function UpperBar({
       </div>
       
       {/* Chat name in the center (only if chat exists) */}
-      {chatName && (
+      {chatName && !isMobile && (
         <div className="flex-1 flex justify-center">
           <h1 className="text-lg font-semibold text-theme-primary truncate max-w-md">
             {chatName}
