@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import AuthGate from './components/AuthGate.tsx';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
 import { getUser } from './services/userService';
 import { useAuthStore } from './store/authStore';
 import { Theme } from './components/Theme';
@@ -17,12 +18,14 @@ if (storedUser) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <SettingsLoader>
-      <Theme>
-        <AuthGate>
-          <App />
-        </AuthGate>
-      </Theme>
-    </SettingsLoader>
+    <ErrorBoundary>
+      <SettingsLoader>
+        <Theme>
+          <AuthGate>
+            <App />
+          </AuthGate>
+        </Theme>
+      </SettingsLoader>
+    </ErrorBoundary>
   </StrictMode>,
 );

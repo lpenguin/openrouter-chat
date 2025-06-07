@@ -1,5 +1,6 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { authMiddleware } from '../services/authMiddleware';
+import { ApiError } from '../middleware/errorHandler';
 import { z } from 'zod';
 import { getOpenRouterCompletionWithAttachments as getOpenRouterCompletion, OpenRouterResponseMessage, OpenRouterContent, OpenRouterRequestMessage, OpenRouterAttachment } from '../services/openrouterService';
 import { getUserSettings } from '../services/settingsService';
@@ -125,7 +126,7 @@ export function validateAttachments(attachments: Attachment[]): void {
     if (a.mimetype === 'application/pdf') {
       const buffer = Buffer.from(a.data, 'base64');
       if (buffer.subarray(0, 5).toString() !== '%PDF-') {
-        throw new Error(`File does not start with %PDF-: ${a.filename}`);
+        throw new ApiError(`File does not start with %PDF-: ${a.filename}`, 400);
       }
     }
   });
@@ -221,14 +222,13 @@ function dbMessageToMessageDto(dbMessage: DbSelectMessage, dbAttachments?: DbSel
 const router = Router();
 
 // POST /chats/ - create new chat
-router.post('/chats', authMiddleware, async (req, res): Promise<void> => {
+router.post('/chats', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   // @ts-ignore
   const user = req.user;
 
   const parseResult = CreateChatSchema.safeParse(req.body);
   if (!parseResult.success) {
-    res.status(400).json({ error: parseResult.error.errors[0].message });
-    return;
+    throw new ApiError(parseResult.error.errors[0].message, 400);
   }
   const { model, chatNameContent } = parseResult.data;
 
@@ -238,8 +238,7 @@ router.post('/chats', authMiddleware, async (req, res): Promise<void> => {
     const settings = await getUserSettings(user.id);
     const apiKey = settings?.operouter?.token;
     if (!apiKey) {
-      res.status(400).json({ error: 'No OpenRouter API key in user settings' });
-      return;
+      throw new ApiError('No OpenRouter API key in user settings', 400);
     }
     // Use OpenRouter to guess chat name
     try {
@@ -263,7 +262,7 @@ router.post('/chats', authMiddleware, async (req, res): Promise<void> => {
 });
 
 // GET /chats/ - list chats
-router.get('/chats', authMiddleware, async (req, res): Promise<void> => {
+router.get('/chats', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   // @ts-ignore
   const user = req.user;
   const userChats = await listChats(user.id);
@@ -271,38 +270,34 @@ router.get('/chats', authMiddleware, async (req, res): Promise<void> => {
 });
 
 // POST /chat/:uuid/messages - post message, call OpenRouter, return assistant message
-router.post('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<void> => {
+router.post('/chat/:uuid/messages', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   // @ts-ignore
   const user = req.user;
   const { uuid } = req.params;
 
   const parseResult = PostMessageRequestSchema.safeParse(req.body);
   if (!parseResult.success) {
-    res.status(400).json({ error: parseResult.error.errors[0].message });
-    return;
+    throw new ApiError(parseResult.error.errors[0].message, 400);
   }
   const { content, model, attachments, useSearch } = parseResult.data;
 
   const chat = await getChatById(uuid);
   if (!chat) {
-    res.status(404).json({ error: 'Chat not found' });
-    return;
+    throw new ApiError('Chat not found', 404);
   }
 
   if (attachments) {
     try {
       validateAttachments(attachments);
     } catch (err) {
-      res.status(400).json({ error: err instanceof Error ? err.message : 'Attachment validation error' });
-      return;
+      throw new ApiError(err instanceof Error ? err.message : 'Attachment validation error', 400);
     }
   }
 
   const settings = await getUserSettings(user.id);
   const apiKey = settings?.operouter?.token;
   if (!apiKey) {
-    res.status(400).json({ error: 'No OpenRouter API key in user settings' });
-    return;
+    throw new ApiError('No OpenRouter API key in user settings', 400);
   }
 
   await setChatModel(uuid, model);
@@ -363,15 +358,14 @@ router.post('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<vo
 });
 
 // GET /chat/:uuid/messages - get messages for chat
-router.get('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<void> => {
+router.get('/chat/:uuid/messages', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   // @ts-ignore
   const user = req.user;
   const { uuid } = req.params;
   // Check chat exists and belongs to user
   const chat = await getChatById(uuid);
   if (!chat || chat.user_id !== user.id) {
-    res.status(404).json({ error: 'Chat not found' });
-    return;
+    throw new ApiError('Chat not found', 404);
   }
   const chatMessages = await getMessagesForChat(uuid);
   const messageDtos = await Promise.all(
@@ -385,34 +379,31 @@ router.get('/chat/:uuid/messages', authMiddleware, async (req, res): Promise<voi
 });
 
 // PUT /chat/:uuid - rename chat
-router.put('/chat/:uuid', authMiddleware, async (req, res): Promise<void> => {
+router.put('/chat/:uuid', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   // @ts-ignore
   const user = req.user;
   const { uuid } = req.params;
   const parseResult = RenameChatSchema.safeParse(req.body);
   if (!parseResult.success) {
-    res.status(400).json({ error: parseResult.error.errors[0].message });
-    return;
+    throw new ApiError(parseResult.error.errors[0].message, 400);
   }
   const { name } = parseResult.data;
   const chat = await getChatById(uuid);
   if (!chat || chat.user_id !== user.id) {
-    res.status(404).json({ error: 'Chat not found' });
-    return;
+    throw new ApiError('Chat not found', 404);
   }
   const updatedChat = await renameChat(uuid, name.trim());
   res.json({ chat: updatedChat });
 });
 
 // DELETE /chat/:uuid - delete chat
-router.delete('/chat/:uuid', authMiddleware, async (req, res): Promise<void> => {
+router.delete('/chat/:uuid', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   // @ts-ignore
   const user = req.user;
   const { uuid } = req.params;
   const chat = await getChatById(uuid);
   if (!chat || chat.user_id !== user.id) {
-    res.status(404).json({ error: 'Chat not found' });
-    return;
+    throw new ApiError('Chat not found', 404);
   }
   await deleteChat(uuid);
   res.json({ success: true });

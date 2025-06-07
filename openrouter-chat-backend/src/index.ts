@@ -5,12 +5,14 @@ import authApi from './api/authApi';
 import settingsApi from './api/settingsApi';
 import chatsApi from './api/chatsApi';
 import attachmentsApi from './api/attachmentsApi';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 const app = express();
 
 // Configure CORS for Railway deployment
 const allowedOrigins = [
   'http://localhost:5173', // Vite dev server
+  'http://127.0.0.1:5173', // Vite dev server
   'http://localhost:3000', // Alternative dev port
   process.env.FRONTEND_URL, // Custom frontend URL
   process.env.RAILWAY_PUBLIC_DOMAIN, // Railway auto-generated domain
@@ -45,6 +47,12 @@ app.use('/api', authApi);
 app.use('/api/settings', settingsApi);
 app.use('/api', chatsApi);
 app.use('/api', attachmentsApi);
+
+// 404 handler for unmatched routes
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

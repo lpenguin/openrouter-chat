@@ -12,6 +12,9 @@ const apiProxy = process.env.VITE_API_PROXY || 'http://localhost:3001'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    sourcemap: true,
+  },
   server: {
     proxy: {
       '/api': apiProxy,

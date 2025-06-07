@@ -1,24 +1,29 @@
 import { MessageAttachment } from '../types/chat';
-import { API_BASE_URL } from '../config/api';
+import { httpClient, HttpError } from './httpClient';
 
 export async function getAttachmentContent(attachmentId: number, token: string): Promise<Blob> {
-  const res = await fetch(`${API_BASE_URL}/attachments/${attachmentId}/content`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  
-  if (!res.ok) {
-    const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || `Failed to get attachment content (${res.status})`);
-    } else {
-      throw new Error(`Failed to get attachment content (${res.status})`);
+  httpClient.setAuthToken(token);
+  try {
+    // Use the raw fetch method for blob responses
+    const blob = await httpClient.getBlob(`/attachments/${attachmentId}/content`);
+    return blob;
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        throw new Error('Attachment not found or you do not have permission to access it.');
+      }
+      if (error.status === 403) {
+        throw new Error('You do not have permission to access this attachment.');
+      }
+      throw new Error(error.userMessage);
     }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
   }
-  
-  return res.blob();
 }
 
 export async function getAttachmentUrl(attachmentId: number, token: string): Promise<string> {
@@ -29,9 +34,9 @@ export async function getAttachmentUrl(attachmentId: number, token: string): Pro
 
 export function openAttachment(attachmentId: number): void {
   // Open attachment in a new tab/window using the existing endpoint
-  // Note: The browser will handle auth by including cookies if same-origin,
-  // but for proper auth we'd need to pass the token as a query param or use a different approach
-  const url = `${API_BASE_URL}/attachments/${attachmentId}/content`;
+  // Note: For proper auth we should use the authenticated version
+  console.warn('Using unauthenticated attachment opening - consider using openAttachmentAuthenticated instead');
+  const url = `/api/attachments/${attachmentId}/content`;
   window.open(url, '_blank');
 }
 

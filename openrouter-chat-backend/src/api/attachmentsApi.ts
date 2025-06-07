@@ -1,22 +1,23 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { attachments } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { authMiddleware } from '../services/authMiddleware';
+import { ApiError } from '../middleware/errorHandler';
 
 const router = Router();
 
 // GET /attachments/:id/content - returns the binary content of the attachment
-router.get('/attachments/:id/content', authMiddleware, async (req, res) => {
+router.get('/attachments/:id/content', authMiddleware, async (req: Request, res: Response) => {
   const { id } = req.params;
   // @ts-ignore
   const user = req.user;
   const result = await db.select().from(attachments).where(eq(attachments.id, Number(id))).limit(1);
   const attachment = result[0];
   if (!attachment) {
-    res.status(404).json({ error: 'Attachment not found' });
+    throw new ApiError('Attachment not found', 404);
   } else if (attachment.user_id !== user.id) {
-    res.status(403).json({ error: 'Forbidden' });
+    throw new ApiError('Forbidden', 403);
   } else {
     res.setHeader('Content-Type', attachment.mimetype);
     
