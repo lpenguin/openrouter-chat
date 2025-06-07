@@ -1,0 +1,77 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Backend",
+      "program": "${workspaceFolder}/openrouter-chat-backend/src/index.ts",
+      "cwd": "${workspaceFolder}/openrouter-chat-backend",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Frontend (Vite Dev Server)",
+      "program": "${workspaceFolder}/openrouter-chat-frontend/node_modules/.bin/vite",
+      "cwd": "${workspaceFolder}/openrouter-chat-frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug Frontend (Chrome)",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/openrouter-chat-frontend",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${workspaceFolder}/openrouter-chat-frontend/src/*",
+        "webpack:///./*": "${workspaceFolder}/openrouter-chat-frontend/*",
+        "webpack:///./~/*": "${workspaceFolder}/openrouter-chat-frontend/node_modules/*"
+      },
+      "preLaunchTask": "Start Frontend Dev Server"
+    },
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Attach to Chrome (Frontend)",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}/openrouter-chat-frontend",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${workspaceFolder}/openrouter-chat-frontend/src/*",
+        "webpack:///./*": "${workspaceFolder}/openrouter-chat-frontend/*"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full Stack",
+      "configurations": [
+        "Debug Backend",
+        "Debug Frontend (Vite Dev Server)"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "",
+        "order": 1
+      },
+      "stopAll": true
+    }
+  ]
+}
