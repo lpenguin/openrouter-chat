@@ -1,5 +1,6 @@
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
+import { useErrorStore } from '../store/errorStore';
 import { DocumentTextIcon } from '@heroicons/react/20/solid';
 import { useCallback } from 'react';
 import * as chatService from '../services/chatService';
@@ -16,6 +17,7 @@ const ChatList = () => {
     deleteChat: deleteChatInStore,
   } = useChatStore();
   const authUser = useAuthStore((state) => state.authUser);
+  const { addError } = useErrorStore();
 
   // Handler for new chat using chatService
   const handleNewChat = useCallback(async () => {
@@ -34,8 +36,14 @@ const ChatList = () => {
 
   const handleRename = async (chatId: string, newName: string) => {
     if (!authUser) return;
-    const updated = await chatService.renameChat(chatId, newName, authUser.token);
-    renameChatInStore(chatId, updated.name);
+    try {
+      const updated = await chatService.renameChat(chatId, newName, authUser.token);
+      renameChatInStore(chatId, updated.name);
+    } catch (error) {
+      addError({
+        message: error instanceof Error ? error.message : 'Failed to rename chat',
+      });
+    }
   };
 
   const handleDelete = async (chatId: string) => {
@@ -44,8 +52,10 @@ const ChatList = () => {
     try {
       await chatService.deleteChat(chatId, authUser.token);
       deleteChatInStore(chatId);
-    } catch (e) {
-      // Optionally show error
+    } catch (error) {
+      addError({
+        message: error instanceof Error ? error.message : 'Failed to delete chat',
+      });
     } finally {
       setLoading(false);
     }

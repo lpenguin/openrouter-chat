@@ -4,6 +4,7 @@ import ChatInput from './ChatInput';
 import { UserChatBubble, AssistantChatBubble, AssistantMessageWithAnnotations } from './ChatBubble';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
+import { useErrorStore } from '../store/errorStore';
 import * as chatService from '../services/chatService';
 import { Message } from '../types/chat';
 
@@ -21,6 +22,8 @@ interface ChatProps {
 
 export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: ChatProps) {
   const authUser = useAuthStore((state) => state.authUser);
+  const { addError } = useErrorStore();
+  
   if (!authUser) return (
     <div className="flex items-center justify-center h-screen">
       <p className="text-gray-500">Please log in to access the chat.</p>
@@ -40,15 +43,22 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
   const [loading, setLoading] = useState(false);
 
   const createRealChatFromTemp = async (firstMessageContent?: string) => {
-    // Create real chat on server with the currently selected model and optional chatNameContent
-    const realChat = await chatService.createChat(authUser.token, model || undefined, firstMessageContent);
-    // Remove quotes from the chat name if present
-    if (realChat.name) {
-      realChat.name = realChat.name.replace(/^"|"$/g, '').trim();
+    try {
+      // Create real chat on server with the currently selected model and optional chatNameContent
+      const realChat = await chatService.createChat(authUser.token, model || undefined, firstMessageContent);
+      // Remove quotes from the chat name if present
+      if (realChat.name) {
+        realChat.name = realChat.name.replace(/^"|"$/g, '').trim();
+      }
+      addChat(realChat);
+      setCurrentChatId(realChat.id);
+      return realChat.id;
+    } catch (error) {
+      addError({
+        message: error instanceof Error ? error.message : 'Failed to create chat',
+      });
+      throw error;
     }
-    addChat(realChat);
-    setCurrentChatId(realChat.id);
-    return realChat.id;
   };
 
 
@@ -69,15 +79,23 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
       (async () => {
         if (currentChatId !== null) {
           setLoading(true);
-          const msgs = await chatService.getMessages(currentChatId, authUser.token);
-          setMessages(msgs);
-          setLoading(false);
+          try {
+            const msgs = await chatService.getMessages(currentChatId, authUser.token);
+            setMessages(msgs);
+          } catch (error) {
+            addError({
+              message: error instanceof Error ? error.message : 'Failed to load messages',
+            });
+            setMessages([]);
+          } finally {
+            setLoading(false);
+          }
         } else {
           setMessages([]);
         }
       })();
     }
-  }, [currentChatId]);
+  }, [currentChatId, addError, setCurrentChatId]);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -124,16 +142,23 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
     }
 
     // Send to backend and add assistant message to store
-    const assistantMsg = await chatService.sendMessageToChat({
-      chatId,
-      content,
-      model: model!!,
-      token: authUser.token,
-      attachments,
-      useSearch,
-    });
-    addMessage(assistantMsg);
-    setAssistantMessageLoading(false);
+    try {
+      const assistantMsg = await chatService.sendMessageToChat({
+        chatId,
+        content,
+        model: model!!,
+        token: authUser.token,
+        attachments,
+        useSearch,
+      });
+      addMessage(assistantMsg);
+    } catch (error) {
+      addError({
+        message: error instanceof Error ? error.message : 'Failed to send message',
+      });
+    } finally {
+      setAssistantMessageLoading(false);
+    }
   };
 
   const handleModelChange = (model: string) => {

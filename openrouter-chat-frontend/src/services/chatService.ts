@@ -1,40 +1,70 @@
 import { ChatSchema, MessageSchema } from '../schemas/chatSchema';
 import { z } from 'zod';
 import { Chat, Message } from '../types/chat';
-import { API_BASE_URL } from '../config/api';
+import { httpClient, HttpError } from './httpClient';
 
 export async function createChat(token: string, model?: string, chatNameContent?: string): Promise<Chat> {
-  const body: any = model ? { model } : {};
-  if (chatNameContent) body.chatNameContent = chatNameContent;
-  const res = await fetch(`${API_BASE_URL}/chats`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to create chat');
-  return ChatSchema.parse(data.chat);
+  httpClient.setAuthToken(token);
+  try {
+    const body: any = model ? { model } : {};
+    if (chatNameContent) body.chatNameContent = chatNameContent;
+    
+    const data = await httpClient.post<{ chat: any }>('/chats', body);
+    return ChatSchema.parse(data.chat);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      // Re-throw with better context for specific errors
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 400) {
+        throw new Error(error.responseBody?.error || 'Invalid chat creation request.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }
 
 export async function getChats(token: string): Promise<Chat[]> {
-  const res = await fetch(`${API_BASE_URL}/chats`, {
-    headers: { 'Authorization': `Bearer ${token}` },
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to list chats');
-  return z.array(ChatSchema).parse(data.chats);
+  httpClient.setAuthToken(token);
+  try {
+    const data = await httpClient.get<{ chats: any[] }>('/chats');
+    return z.array(ChatSchema).parse(data.chats);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }
 
 export async function getMessages(chatId: string, token: string): Promise<Message[]> {
-  const res = await fetch(`${API_BASE_URL}/chat/${chatId}/messages`, {
-    headers: { 'Authorization': `Bearer ${token}` },
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to get messages');
-  return z.array(MessageSchema).parse(data.messages);
+  httpClient.setAuthToken(token);
+  try {
+    const data = await httpClient.get<{ messages: any[] }>(`/chat/${chatId}/messages`);
+    return z.array(MessageSchema).parse(data.messages);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        throw new Error('Chat not found or you do not have permission to access it.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }
 
 export async function sendMessageToChat({ chatId, content, model, token, attachments, useSearch }: {
@@ -45,48 +75,83 @@ export async function sendMessageToChat({ chatId, content, model, token, attachm
   attachments?: { filename: string; mimetype: string; data: string }[],
   useSearch?: boolean,
 }): Promise<Message> {
-  const body: any = { content, model };
-  if (attachments && attachments.length > 0) {
-    body.attachments = attachments;
+  httpClient.setAuthToken(token);
+  try {
+    const body: any = { content, model };
+    if (attachments && attachments.length > 0) {
+      body.attachments = attachments;
+    }
+    if (useSearch) {
+      body.useSearch = true;
+    }
+    
+    const data = await httpClient.post<{ message: any }>(`/chat/${chatId}/messages`, body);
+    return MessageSchema.parse(data.message);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        throw new Error('Chat not found or you do not have permission to access it.');
+      }
+      if (error.status === 400) {
+        throw new Error(error.responseBody?.error || 'Invalid message content or format.');
+      }
+      if (error.status === 413) {
+        throw new Error('Message or attachments are too large.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
   }
-  if (useSearch) {
-    body.useSearch = true;
-  }
-  const res = await fetch(`${API_BASE_URL}/chat/${chatId}/messages`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to send message');
-  return MessageSchema.parse(data.message);
 }
 
 export async function renameChat(chatId: string, name: string, token: string): Promise<Chat> {
-  const res = await fetch(`${API_BASE_URL}/chat/${chatId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ name }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to rename chat');
-  return ChatSchema.parse(data.chat);
+  httpClient.setAuthToken(token);
+  try {
+    const data = await httpClient.put<{ chat: any }>(`/chat/${chatId}`, { name });
+    return ChatSchema.parse(data.chat);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        throw new Error('Chat not found or you do not have permission to access it.');
+      }
+      if (error.status === 400) {
+        throw new Error(error.responseBody?.error || 'Invalid chat name.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }
 
 export async function deleteChat(chatId: string, token: string): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/chat/${chatId}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to delete chat');
-  if (!data.success) throw new Error('Failed to delete chat');
+  httpClient.setAuthToken(token);
+  try {
+    const data = await httpClient.delete<{ success: boolean }>(`/chat/${chatId}`);
+    if (!data.success) {
+      throw new Error('Failed to delete chat');
+    }
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        throw new Error('Chat not found or you do not have permission to access it.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }

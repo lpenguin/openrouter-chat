@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { useErrorStore } from '../store/errorStore';
 import { setUser } from '../services/userService';
 import { loginApi, registerApi } from '../services/authService';
 
@@ -10,6 +11,7 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const { authUser, setAuthUser } = useAuthStore();
+  const { addError } = useErrorStore();
   const [mode, setMode] = useState<'login' | 'register'>('login');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +25,13 @@ export default function AuthGate({ children }: { children?: React.ReactNode }) {
       setAuthUser(data);
       setUser(data);
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = err.message || `${mode === 'login' ? 'Login' : 'Registration'} failed`;
+      setError(errorMessage);
+      
+      // Also add to global error store for toast notification
+      addError({
+        message: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

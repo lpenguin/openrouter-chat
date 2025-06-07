@@ -1,31 +1,48 @@
 import { settingsSchema, Settings } from '../schemas/settingsSchema';
-import { API_BASE_URL } from '../config/api';
+import { httpClient, HttpError } from './httpClient';
 
 export async function fetchSettings(token: string): Promise<Settings | null> {
-  const res = await fetch(`${API_BASE_URL}/settings`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-    credentials: 'include',
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
+  httpClient.setAuthToken(token);
   try {
+    const data = await httpClient.get<{ settings: any }>('/settings');
     return settingsSchema.parse(data.settings);
-  } catch {
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        // Settings not found is acceptable, return null
+        return null;
+      }
+      // For other errors, return null to gracefully handle
+      console.warn('Failed to fetch settings:', error.userMessage);
+      return null;
+    }
+    console.warn('Failed to fetch settings:', error);
     return null;
+  } finally {
+    httpClient.clearAuthToken();
   }
 }
 
 export async function saveSettings(token: string, settings: Settings): Promise<boolean> {
-  const res = await fetch(`${API_BASE_URL}/settings`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    credentials: 'include',
-    body: JSON.stringify(settings),
-  });
-  return res.ok;
+  httpClient.setAuthToken(token);
+  try {
+    await httpClient.post<{ success: boolean }>('/settings', settings);
+    return true;
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 400) {
+        throw new Error(error.responseBody?.error || 'Invalid settings data.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }
