@@ -8,6 +8,7 @@ import { useChatStore } from './store/chatStore';
 import { useErrorStore } from './store/errorStore';
 import { setGlobalLogoutCallback } from './services/httpClient';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { BrowserRouter, Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import * as chatService from './services/chatService';
 
 // Hook to detect if screen is mobile size
@@ -27,19 +28,40 @@ function useIsMobile() {
   return isMobile;
 }
 
-function App() {
+// Sync currentChatId with route param only (no chat loading here)
+function ChatRouteSync(props: { sidebarVisible: boolean; toggleSidebar: () => void; isMobile: boolean }) {
+  const { sidebarVisible, toggleSidebar, isMobile } = props;
+  const { chatId } = useParams<{ chatId?: string }>();
+  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+  const currentChatId = useChatStore((state) => state.currentChatId);
+  console.log('ChatRouteSync', { chatId, currentChatId });
+  
+  useEffect(() => {
+    if (chatId !== undefined && !currentChatId) {
+      setCurrentChatId(chatId);
+    }
+  }, [chatId, currentChatId, setCurrentChatId]);
+  return (
+    <Chat
+      sidebarVisible={sidebarVisible}
+      onToggleSidebar={toggleSidebar}
+      isMobile={isMobile}
+    />
+  );
+}
+
+function AppInner() {
   const authUser = useAuthStore((state) => state.authUser);
   const { setAuthUser } = useAuthStore();
   const { addError } = useErrorStore();
-  
-  // Initialize network status monitoring (no need to store the value)
-  useNetworkStatus();
-  
-  if (!authUser) return null;
-
-  const { setCurrentChatId, setChats, setLoading } = useChatStore();
+  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+  const currentChatId = useChatStore((state) => state.currentChatId);
+  const setChats = useChatStore((state) => state.setChats);
+  const setLoading = useChatStore((state) => state.setLoading);
   const isMobile = useIsMobile();
-  const [sidebarVisible, setSidebarVisible] = useState(false); // Start closed for both mobile and desktop initially
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  useNetworkStatus();
+  const navigate = useNavigate();
 
   // Set up global logout callback for HTTP client
   useEffect(() => {
@@ -50,20 +72,17 @@ function App() {
         message: 'Session expired',
       });
     };
-    
     setGlobalLogoutCallback(logoutCallback);
-    
-    // Cleanup on unmount
     return () => setGlobalLogoutCallback(null);
   }, [setAuthUser, addError]);
 
-  // Set sidebar visibility based on screen size
   useEffect(() => {
-    setSidebarVisible(!isMobile); // Open on desktop, closed on mobile
+    setSidebarVisible(!isMobile);
   }, [isMobile]);
 
   // On login, load chats or create a new one using populateChatStore
   useEffect(() => {
+    if (!authUser) return;
     (async () => {
       setLoading(true);
       try {
@@ -79,41 +98,70 @@ function App() {
         setLoading(false);
       }
     })();
-  }, [authUser, setChats, setLoading, addError]);
+  }, [authUser, setChats, setLoading, setCurrentChatId, addError]);
+
+
+
+  // Update the route when currentChatId changes
+  useEffect(() => {
+    // Only update if the route does not match the currentChatId
+    const path = window.location.pathname;
+    const expected = currentChatId ? `/${currentChatId}` : '/';
+    if (path !== expected) {
+      console.log('Navigating to', expected, 'from', path);
+      navigate(expected, { replace: true });
+    }
+  }, [currentChatId, navigate]);
 
   const toggleSidebar = () => {
     setSidebarVisible(prev => !prev);
   };
 
+  if (!authUser) return null;
+
+  return (
+    <div className="bg-white text-gray-900 relative">
+      {isMobile && sidebarVisible && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+      <div className="flex flex-row min-h-[100svh]">
+        <Sidebar
+          user={authUser!}
+          onClose={toggleSidebar}
+          isVisible={sidebarVisible}
+          isMobile={isMobile}
+        />
+        <Routes>
+          <Route path="/:chatId" element={
+            <ChatRouteSync
+              sidebarVisible={sidebarVisible}
+              toggleSidebar={toggleSidebar}
+              isMobile={isMobile}
+               />
+          } />
+          <Route path="/" element={
+            <ChatRouteSync
+              sidebarVisible={sidebarVisible}
+              toggleSidebar={toggleSidebar}
+              isMobile={isMobile}
+             />
+            } />
+        </Routes>
+      </div>
+      <ErrorToastContainer />
+    </div>
+  );
+}
+
+function App() {
   return (
     <ErrorBoundary>
-      <div className="bg-white text-gray-900 relative">
-        {/* Mobile backdrop overlay */}
-        {isMobile && sidebarVisible && (
-          <div 
-            className="fixed inset-0 bg-black/20 z-40 md:hidden"
-            onClick={toggleSidebar}
-          />
-        )}
-        
-        {/* Layout container */}
-        <div className="flex flex-row min-h-[100svh]">
-          <Sidebar 
-            user={authUser} 
-            onClose={toggleSidebar} 
-            isVisible={sidebarVisible}
-            isMobile={isMobile}
-          />
-          <Chat 
-            sidebarVisible={sidebarVisible}
-            onToggleSidebar={toggleSidebar}
-            isMobile={isMobile}
-          />
-        </div>
-        
-        {/* Global Error Toast Container */}
-        <ErrorToastContainer />
-      </div>
+      <BrowserRouter>
+        <AppInner />
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }

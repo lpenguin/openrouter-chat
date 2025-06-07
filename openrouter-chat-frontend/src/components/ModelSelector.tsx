@@ -16,7 +16,6 @@ export default function ModelSelector({ currentModel, onModelChange }: ModelSele
   useEffect(() => {
     fetchOpenRouterModels().then(ms => {
       setModels(ms);
-      console.log('Loaded models:', ms);
     }).catch(() => setModels([]));
 
     setSelected(currentModel);

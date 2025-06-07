@@ -19,9 +19,10 @@ interface ChatProps {
   sidebarVisible: boolean;
   onToggleSidebar: () => void;
   isMobile: boolean;
+  onNewChatId?: (id: string) => void;
 }
 
-export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: ChatProps) {
+export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewChatId }: ChatProps) {
   const authUser = useAuthStore((state) => state.authUser);
   const { addError } = useErrorStore();
   
@@ -137,6 +138,9 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
       try {
         // Pass the first message content for chat name suggestion
         chatId = await createRealChatFromTemp(content);
+        if (onNewChatId && chatId) {
+          onNewChatId(chatId);
+        }
       } catch (e) {
         throw e;
       } finally {
