@@ -5,10 +5,12 @@ interface SettingsStore {
   settings: Settings | null;
   setSettings: (settings: Settings) => void;
   setTheme: (theme: string) => void;
+  setDefaultModel: (defaultModel: string) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
   settings: null,
   setSettings: (settings) => set({ settings }),
   setTheme: (theme) => set((state) => state.settings ? { settings: { ...state.settings, theme } } : {}),
+  setDefaultModel: (defaultModel) => set((state) => state.settings ? { settings: { ...state.settings, defaultModel } } : {}),
 }));

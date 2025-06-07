@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import * as settingsService from '../services/settingsService';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react';
 import type { Settings } from '../schemas/settingsSchema';
+import ModelSelector from './ModelSelector';
 
 const THEMES = [
   { value: 'github', label: 'GitHub (Default)' },
@@ -26,11 +27,13 @@ export default function SettingsDialog({ open, onClose }: {
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState(settings?.operouter.token || '');
   const [theme, setTheme] = useState(settings?.theme || 'github');
+  const [defaultModel, setDefaultModel] = useState(settings?.defaultModel || '');
 
   useEffect(() => {
     if (settings) {
       setToken(settings.operouter.token);
       setTheme(settings.theme);
+      setDefaultModel(settings.defaultModel || '');
     }
   }, [settings]);
 
@@ -41,7 +44,7 @@ export default function SettingsDialog({ open, onClose }: {
     setSaving(true);
     setError(null);
     try {
-      const newSettings: Settings = { operouter: { token }, theme };
+      const newSettings: Settings = { operouter: { token }, theme, defaultModel };
       setSettings(newSettings);
       settingsService.saveSettings(authUser.token, newSettings);
       onClose();
@@ -108,6 +111,10 @@ export default function SettingsDialog({ open, onClose }: {
                       </ListboxOptions>
                     </div>
                   </Listbox>
+                </div>
+                <div className="mb-4 z-50">
+                  <label className="block text-sm font-medium text-theme-primary mb-1">Default Model</label>
+                  <ModelSelector currentModel={defaultModel} onModelChange={setDefaultModel} />
                 </div>
                 {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
                 <div className="flex justify-end gap-2">
