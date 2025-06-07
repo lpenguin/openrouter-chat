@@ -9,6 +9,7 @@ interface ChatListItemProps {
   onClick: (chatId: string) => void;
   onEdit: (chatId: string, newName: string) => void;
   onDelete: (chatId: string) => void;
+  className?: string; // Allow passing custom className
 }
 
 export default function ChatListItem({ 
@@ -17,7 +18,8 @@ export default function ChatListItem({
   selected, 
   onClick, 
   onEdit, 
-  onDelete 
+  onDelete, 
+  className = '' 
 }: ChatListItemProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -41,11 +43,12 @@ export default function ChatListItem({
 
   return (
     <li
-      className={`group flex items-center px-4 py-2 rounded cursor-pointer transition-colors relative hover:bg-theme-surface-200
+      className={`group flex items-center cursor-pointer transition-colors relative hover:bg-theme-surface-200
         ${selected
           ? 'bg-theme-surface-300 hover:bg-theme-surface-300 text-theme-primary font-semibold'
-          : 'text-theme-primary'}
-      `}
+          : 'bg-theme-surface-100 text-theme-primary'}
+        ${className}`}
+      style={{ marginBottom: '2px' }}
       // Only select chat if not clicking menu or editing
       onClick={e => {
         if (editingId !== chatId && !(e.target as HTMLElement).closest('.chat-menu')) {

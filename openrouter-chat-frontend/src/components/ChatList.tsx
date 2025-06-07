@@ -67,10 +67,10 @@ const ChatList = () => {
 
   return (
     <div className="w-full max-w-xs mx-auto p-4">
+      {/* Remove old Chats title, now handled in Sidebar */}
       <div className="flex flex-col justify-between mb-4">
-        <h2 className="text-lg font-semibold text-theme-primary">Chats</h2>
         <button
-          className="flex items-center justify-between px-3 py-2 mt-5 bg-theme-primary text-white rounded hover:bg-theme-primary focus:outline-none w-full cursor-pointer"
+          className="flex items-center justify-between px-3 py-2 mt-5 bg-theme-primary text-white rounded-md hover:bg-theme-primary focus:outline-none w-full cursor-pointer"
           onClick={handleNewChat}
           disabled={!authUser}
         >
@@ -91,6 +91,8 @@ const ChatList = () => {
             onClick={handleChatClick}
             onEdit={handleRename}
             onDelete={handleDelete}
+            // Pass style props for restyling
+            className="w-full px-3 py-2 rounded bg-theme-surface-100 hover:bg-theme-surface-200 transition-colors duration-100 text-theme-primary text-sm font-medium cursor-pointer flex items-center min-h-[36px] h-9"
           />
         ))}
       </ul>
