@@ -5,6 +5,7 @@ import { UserChatBubble, AssistantChatBubble, AssistantMessageWithAnnotations } 
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
 import { useErrorStore } from '../store/errorStore';
+import { useSettingsStore } from '../store/settingsStore';
 import * as chatService from '../services/chatService';
 import { Message } from '../types/chat';
 
@@ -35,6 +36,7 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
     currentChatId,
     addChat,    
   } = useChatStore();
+  const { settings } = useSettingsStore();
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [assistantMessageLoading, setAssistantMessageLoading] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -69,9 +71,10 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile }: Chat
         setModel(currentChat.model);
       }
     } else {
-      setModel('openai/gpt-3.5-turbo');
+      // Use default model from settings if available
+      setModel(settings?.defaultModel || 'openai/gpt-3.5-turbo');
     }
-  }, [currentChatId]);
+  }, [currentChatId, settings]);
 
   useEffect(() => {
     if (isTransitioning) return;

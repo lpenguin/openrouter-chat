@@ -5,6 +5,7 @@ export const settingsSchema = z.object({
     token: z.string(),
   }),
   theme: z.string().default('github'),
+  defaultModel: z.string().optional(),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
