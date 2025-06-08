@@ -44,15 +44,7 @@ interface HttpClientConfig {
 
 // Default configuration
 const DEFAULT_CONFIG: HttpClientConfig = {
-  timeout: 30000, // 30 seconds default
-};
-
-// Timeout configurations for different operations
-const TIMEOUT_CONFIGS = {
-  auth: 15000,      // 15 seconds for auth operations
-  chat: 60000,      // 60 seconds for chat/AI operations
-  upload: 120000,   // 2 minutes for file uploads
-  default: 30000    // 30 seconds for other operations
+  timeout: 120000, // 120 seconds default
 };
 
 // Enhanced fetch with timeout and connection error handling
@@ -83,6 +75,12 @@ const fetchWithTimeout = (url: string, options: RequestInit, timeoutMs: number):
   });
 };
 
+// Type definition for HTTP request options
+export type HttpRequestOptions = {
+  headers?: Record<string, string>;
+  timeout?: number;
+};
+
 // Enhanced HTTP client class
 export class HttpClient {
   private config: HttpClientConfig;
@@ -100,23 +98,6 @@ export class HttpClient {
     this.token = undefined;
   }
 
-  private getTimeoutForOperation(endpoint: string, defaultTimeout?: number): number {
-    if (defaultTimeout) return defaultTimeout;
-    
-    // Determine timeout based on endpoint
-    if (endpoint.includes('/login') || endpoint.includes('/register') || endpoint.includes('/me')) {
-      return TIMEOUT_CONFIGS.auth;
-    }
-    if (endpoint.includes('/chat') && endpoint.includes('/messages')) {
-      return TIMEOUT_CONFIGS.chat;
-    }
-    if (endpoint.includes('/attachments')) {
-      return TIMEOUT_CONFIGS.upload;
-    }
-    
-    return TIMEOUT_CONFIGS.default;
-  }
-
   private async makeRequest<T>(
     method: string,
     endpoint: string,
@@ -127,7 +108,7 @@ export class HttpClient {
     } = {}
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-    const timeout = options.timeout || this.getTimeoutForOperation(endpoint);
+    const timeout = options.timeout || this.config.timeout!;
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -187,24 +168,24 @@ export class HttpClient {
   }
 
   // HTTP method helpers
-  async get<T>(endpoint: string, options?: { headers?: Record<string, string>; timeout?: number }): Promise<T> {
+  async get<T>(endpoint: string, options?: HttpRequestOptions): Promise<T> {
     return this.makeRequest<T>('GET', endpoint, options);
   }
 
-  async post<T>(endpoint: string, body?: any, options?: { headers?: Record<string, string>; timeout?: number }): Promise<T> {
+  async post<T>(endpoint: string, body?: any, options?: HttpRequestOptions): Promise<T> {
     return this.makeRequest<T>('POST', endpoint, { ...options, body });
   }
 
-  async put<T>(endpoint: string, body?: any, options?: { headers?: Record<string, string>; timeout?: number }): Promise<T> {
+  async put<T>(endpoint: string, body?: any, options?: HttpRequestOptions): Promise<T> {
     return this.makeRequest<T>('PUT', endpoint, { ...options, body });
   }
 
-  async delete<T>(endpoint: string, options?: { headers?: Record<string, string>; timeout?: number }): Promise<T> {
+  async delete<T>(endpoint: string, options?: HttpRequestOptions): Promise<T> {
     return this.makeRequest<T>('DELETE', endpoint, options);
   }
 
   // Special method for blob responses (like file downloads)
-  async getBlob(endpoint: string, options?: { headers?: Record<string, string>; timeout?: number }): Promise<Blob> {
+  async getBlob(endpoint: string, options?: HttpRequestOptions): Promise<Blob> {
     const url = `${API_BASE_URL}${endpoint}`;
     const timeout = options?.timeout || this.config.timeout!;
     
