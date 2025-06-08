@@ -7,11 +7,6 @@ export type ChatMessage = {
   model?: string | null;
 };
 
-export const OpenRouterAnnotationSchema = z.union([
-  z.record(z.any()),
-  z.array(z.any())
-]);
-
 export const OpenRouterAttachmentSchema = z.union([
   z.object({ type: z.literal('text'), text: z.string() }),
   z.object({ type: z.literal('image_url'), image_url: z.object({ url: z.string() }) }),
@@ -27,20 +22,38 @@ export const OpenRouterContentSchema = z.union([
 export const OpenRouterResponseMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string(),
-  annotations: OpenRouterAnnotationSchema.optional(),
+  annotations: z.union([
+    z.record(z.any()),
+    z.array(z.any())
+  ]).optional(),
 });
 
 export const OpenRouterRequestMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: OpenRouterContentSchema,
-  annotations: OpenRouterAnnotationSchema.optional(),
+  annotations: z.union([
+    z.record(z.any()),
+    z.array(z.any())
+  ]).optional(),
 });
 
+export const OpenRouterAnnotationsSchema = z.union([
+  z.record(z.any()),
+  z.array(z.any()),
+  z.null(),
+]);
+
 export type OpenRouterContent = z.infer<typeof OpenRouterContentSchema>;
-export type OpenRouterAnnotation = z.infer<typeof OpenRouterAnnotationSchema>;
 export type OpenRouterAttachment = z.infer<typeof OpenRouterAttachmentSchema>;
 export type OpenRouterResponseMessage = z.infer<typeof OpenRouterResponseMessageSchema>;
 export type OpenRouterRequestMessage = z.infer<typeof OpenRouterRequestMessageSchema>;
+export type OpenRouterAnnotations = z.infer<typeof OpenRouterAnnotationsSchema>;
+
+// Helper to convert DB annotation to OpenRouter annotation (validates with Zod)
+export function dbAnnotationToOpenRouterAnnotation(annotation: unknown): any {
+  const p = OpenRouterAnnotationsSchema.safeParse(annotation);
+  return p.success && p.data !== null ? p.data : undefined;
+}
 
 export const OpenRouterResponseSchema = z.object({
   choices: z.array(z.object({

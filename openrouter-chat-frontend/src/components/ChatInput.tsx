@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { PaperClipIcon, XMarkIcon, DocumentIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import { lookup } from 'mrmime';
 
 interface Attachment {
   file: File;
   previewUrl: string; // For images
-  type: 'image' | 'pdf';
+  type: 'image' | 'pdf' | 'text';
+  mimetype?: string;
 }
 
 interface ChatInputProps {
@@ -13,7 +15,22 @@ interface ChatInputProps {
   sendDisabled?: boolean;
 }
 
-const ACCEPTED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const ACCEPTED_TYPES = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'text/plain',
+  'text/markdown',
+  'text/x-markdown',
+  'text/csv',
+  'text/html',
+  'text/css',
+  'text/javascript',
+  'application/json',
+  'application/xml',
+];
 
 const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
   const [value, setValue] = useState('');
@@ -64,7 +81,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
         const data = await fileToBase64(att.file);
         return {
           filename: att.file.name,
-          mimetype: att.file.type,
+          mimetype: att.mimetype || 'application/octet-stream',
           data,
         };
       })
@@ -91,12 +108,44 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
   };
 
   const addFiles = (files: File[]) => {
-    const validFiles = files.filter(f => ACCEPTED_TYPES.includes(f.type));
-    const newAttachments: Attachment[] = validFiles.map(f => ({
-      file: f,
-      previewUrl: f.type.startsWith('image/') ? URL.createObjectURL(f) : '',
-      type: f.type === 'application/pdf' ? 'pdf' : 'image',
-    }));
+    const isAcceptedFile = (file: File) => {
+      // Detect proper MIME type using mrmime if browser doesn't provide it or provides generic type
+      let detectedMimeType = file.type;
+      if (!file.type || file.type === 'application/octet-stream' || file.type === '') {
+        detectedMimeType = lookup(file.name) || 'application/octet-stream';
+      }
+      
+      // Check if the detected MIME type is accepted
+      return ACCEPTED_TYPES.includes(detectedMimeType);
+    };
+    
+    const validFiles = files.filter(isAcceptedFile);
+    const newAttachments: Attachment[] = validFiles.map(f => {
+      let type: Attachment['type'] = 'image';
+      
+      // Detect proper MIME type using mrmime if browser doesn't provide it or provides generic type
+      let detectedMimeType = f.type;
+      if (!f.type || f.type === 'application/octet-stream' || f.type === '') {
+        detectedMimeType = lookup(f.name) || 'application/octet-stream';
+      }
+      
+      if (detectedMimeType === 'application/pdf') {
+        type = 'pdf';
+      } else if (detectedMimeType.startsWith('text/') || 
+                 detectedMimeType === 'text/markdown' || 
+                 detectedMimeType === 'text/x-markdown' ||
+                 detectedMimeType === 'application/json' ||
+                 detectedMimeType === 'application/xml') {
+        type = 'text';
+      }
+      
+      return {
+        file: f,
+        previewUrl: detectedMimeType.startsWith('image/') ? URL.createObjectURL(f) : '',
+        type,
+        mimetype: detectedMimeType,
+      };
+    });
     setAttachments(prev => [...prev, ...newAttachments]);
   };
 
@@ -212,7 +261,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
             </button>
             <input
               type="file"
-              accept="application/pdf,image/png,image/jpeg,image/gif,image/webp"
+              accept={[...ACCEPTED_TYPES, '.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.txt', '.md', '.markdown', '.csv', '.htm', '.html', '.css', '.js', '.json', '.xml'].join(',')}
               multiple
               ref={fileInputRef}
               className="hidden"
