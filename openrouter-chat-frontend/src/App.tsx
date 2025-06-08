@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import ErrorToastContainer from './components/ErrorToast';
@@ -31,16 +31,18 @@ function useIsMobile() {
 // Sync currentChatId with route param only (no chat loading here)
 function ChatRouteSync(props: { sidebarVisible: boolean; toggleSidebar: () => void; isMobile: boolean }) {
   const { sidebarVisible, toggleSidebar, isMobile } = props;
-  const { chatId } = useParams<{ chatId?: string }>();
+  const { chatId: urlChatId } = useParams<{ chatId?: string }>();
   const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
   const currentChatId = useChatStore((state) => state.currentChatId);
-  console.log('ChatRouteSync', { chatId, currentChatId });
+  const prevChatId = useRef<string | null>(null);
+  console.log('ChatRouteSync', { chatId: urlChatId, currentChatId, prevChatId: prevChatId.current });
   
   useEffect(() => {
-    if (chatId !== undefined && !currentChatId) {
-      setCurrentChatId(chatId);
+    if (urlChatId !== undefined && !currentChatId && prevChatId.current === null) {
+      setCurrentChatId(urlChatId);
     }
-  }, [chatId, currentChatId, setCurrentChatId]);
+    prevChatId.current = currentChatId;
+  }, [urlChatId, currentChatId, setCurrentChatId]);
   return (
     <Chat
       sidebarVisible={sidebarVisible}
