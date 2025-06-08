@@ -126,6 +126,25 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
     });
   };
 
+  // Add support for pasting images
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (!e.clipboardData || !e.clipboardData.items) return;
+    const items = Array.from(e.clipboardData.items);
+    const imageFiles: File[] = [];
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file && ACCEPTED_TYPES.includes(file.type)) {
+          imageFiles.push(file);
+        }
+      }
+    }
+    if (imageFiles.length > 0) {
+      addFiles(imageFiles);
+      e.preventDefault(); // Prevent default paste behavior for images
+    }
+  };
+
   return (
     <div className="py-4">
       <div
@@ -164,6 +183,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             minRows={1}
             maxRows={8}
             ref={textareaRef}
