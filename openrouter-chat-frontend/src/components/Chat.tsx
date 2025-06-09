@@ -38,7 +38,9 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
     addChat,    
   } = useChatStore();
   const { settings } = useSettingsStore();
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);
+  const previousMessagesLengthRef = useRef(0);
+  const justLoadedChatRef = useRef(false);
   const [assistantMessageLoading, setAssistantMessageLoading] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -86,25 +88,38 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
           try {
             const msgs = await chatService.getMessages(currentChatId, authUser.token);
             setMessages(msgs);
+            // Reset the previous messages length when loading a chat
+            previousMessagesLengthRef.current = msgs.length;
+            // Mark that we just loaded a chat
+            justLoadedChatRef.current = true;
           } catch (error) {
             addError({
               message: error instanceof Error ? error.message : 'Failed to load messages',
             });
             setMessages([]);
+            previousMessagesLengthRef.current = 0;
           } finally {
             setLoading(false);
           }
         } else {
           setMessages([]);
+          previousMessagesLengthRef.current = 0;
         }
       })();
     }
   }, [currentChatId, addError, setCurrentChatId]);
 
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (justLoadedChatRef.current && messages.length > 0 && lastMessageRef.current) {
+      // When just loaded a chat, scroll to the end of the last message
+      lastMessageRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
+      justLoadedChatRef.current = false;
+    } else if (messages.length > previousMessagesLengthRef.current && messages.length > 0 && lastMessageRef.current) {
+      // When new messages are added, scroll to the beginning of the last message
+      lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    // Update the previous messages length
+    previousMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   const addMessage = (message: Message) => {
@@ -195,17 +210,21 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
         {/* ChatMessages - Scrollable area that takes remaining space */}
         <div className="flex-1 overflow-y-auto">
           <div className="w-full max-w-2xl mx-auto flex flex-col space-y-3 px-4 py-4">
-            {(loading ? loadingStub : messages).map((msg: Message) =>
-              msg.role === 'assistant' ? (
-                <AssistantChatBubble key={msg.id} message={msg as AssistantMessageWithAnnotations} />
+            {(loading ? loadingStub : messages).map((msg: Message, index) => {
+              const isLastMessage = index === messages.length - 1;
+              return msg.role === 'assistant' ? (
+                <div key={msg.id} ref={isLastMessage ? lastMessageRef : null}>
+                  <AssistantChatBubble message={msg as AssistantMessageWithAnnotations} />
+                </div>
               ) : (
-                <UserChatBubble key={msg.id} message={msg} />
-              )
-            )}
+                <div key={msg.id} ref={isLastMessage ? lastMessageRef : null}>
+                  <UserChatBubble message={msg} />
+                </div>
+              );
+            })}
             {assistantMessageLoading && !loading && (
               <div className="px-4 py-2 text-gray-500">Assistant is typing...</div>
             )}
-            <div ref={chatEndRef} />
           </div>
         </div>
         {/* ChatInput - Fixed at bottom */}
