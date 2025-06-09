@@ -5,11 +5,21 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Check for token in Authorization header first
+  let token: string | undefined;
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    throw new ApiError('Missing or invalid Authorization header', 401);
+  
+  if (auth && auth.startsWith('Bearer ')) {
+    token = auth.slice(7);
+  } else if (req.query.token && typeof req.query.token === 'string') {
+    // For SSE requests, check for token in query parameter
+    token = req.query.token;
   }
-  const token = auth.slice(7);
+  
+  if (!token) {
+    throw new ApiError('Missing or invalid Authorization header or token', 401);
+  }
+  
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     // @ts-ignore

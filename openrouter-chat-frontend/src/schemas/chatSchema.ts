@@ -26,11 +26,12 @@ const BaseMessageSchema = z.object({
 
 export const UserMessageSchema = BaseMessageSchema.extend({
   role: z.literal('user'),
+  status: z.enum(['generating', 'complete']).nullable().optional(),
 });
 export const AssistantMessageSchema = BaseMessageSchema.extend({
   role: z.literal('assistant'),
   model: z.string(),
-  provider: z.string(),
+  provider: z.string().optional(),
   searchAnnotations: z.array(z.object({
     url: z.string().url(),
     faviconUrl: z.string().url().optional(),
@@ -40,6 +41,7 @@ export const AssistantMessageSchema = BaseMessageSchema.extend({
     startIndex: z.number().optional(),
     endIndex: z.number().optional(),
   })).optional(),
+  status: z.enum(['generating', 'complete']).nullable().optional(),
 });
 
 export const MessageSchema = z.discriminatedUnion('role', [

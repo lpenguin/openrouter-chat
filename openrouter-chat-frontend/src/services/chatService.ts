@@ -74,7 +74,7 @@ export async function sendMessageToChat({ chatId, content, model, token, attachm
   token: string,
   attachments?: { filename: string; mimetype: string; data: string }[],
   useSearch?: boolean,
-}): Promise<Message> {
+}): Promise<{ messageId: string }> {
   httpClient.setAuthToken(token);
   try {
     const body: any = { content, model };
@@ -85,8 +85,8 @@ export async function sendMessageToChat({ chatId, content, model, token, attachm
       body.useSearch = true;
     }
     
-    const data = await httpClient.post<{ message: any }>(`/chat/${chatId}/messages`, body);
-    return MessageSchema.parse(data.message);
+    const data = await httpClient.post<{ messageId: string }>(`/chat/${chatId}/messages`, body);
+    return { messageId: data.messageId };
   } catch (error) {
     if (error instanceof HttpError) {
       if (error.status === 401) {
@@ -154,4 +154,29 @@ export async function deleteChat(chatId: string, token: string): Promise<void> {
   } finally {
     httpClient.clearAuthToken();
   }
+}
+
+export function streamAssistantMessage({
+  chatId,
+  token,
+  onDelta,
+  onDone,
+  onError,
+}: {
+  chatId: string;
+  token: string;
+  onDelta: (delta: string) => void;
+  onDone: () => void;
+  onError: (err: any) => void;
+}): EventSource {
+  httpClient.setAuthToken(token);
+  const url = `/stream-message/${chatId}`;
+  const es = httpClient.streamSSE({
+    url,
+    onDelta,
+    onDone,
+    onError,
+  });
+  // Do NOT clear the auth token here; leave it set for the duration of the stream
+  return es;
 }

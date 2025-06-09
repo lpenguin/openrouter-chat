@@ -5,6 +5,15 @@ import { DbSelectAttachment, DbSelectMessage, DbInsertAttachment } from '../../d
 import { getAttachmentsForMessage } from '../../services/chatService';
 import { dbAnnotationToOpenRouterAnnotation } from '../../services/openrouterService';
 import { OpenRouterAttachment, OpenRouterRequestMessage } from '../../services/openrouterService';
+import { uuid } from 'drizzle-orm/gel-core';
+
+// Global in-memory store for streaming assistant messages and listeners
+// Keyed by chatId
+interface StreamingMessageState {
+  message: MessageDto;
+  listeners: Array<(content: string, done: boolean) => void>;
+}
+const streamingState: Record<string, StreamingMessageState> = {};
 
 // Helper to map a single attachment to OpenRouterContent
 export function mapAttachmentToOpenRouterContent(att: Attachment): OpenRouterAttachment | undefined {
@@ -155,6 +164,13 @@ export function dbMessageToMessageDto(dbMessage: DbSelectMessage, dbAttachments?
       messageDto.searchAnnotations = searchAnnotations;
     }
   }
+  // Add status field
+  if (dbMessage.role === 'assistant') {
+    // Placeholder: always complete for now, will update in handler
+    messageDto.status = 'complete';
+  } else {
+    messageDto.status = null;
+  }
   return messageDto;
 }
 
@@ -168,4 +184,47 @@ export function attachmentsToInsertArray(attachments: Attachment[] | undefined, 
     mimetype: att.mimetype,
     data: Buffer.from(att.data, 'base64'),
   })) || [];
+}
+
+// Streaming messages handlers
+
+export function addStreamingMessage(chatId: string, message: MessageDto) {
+  if (!streamingState[chatId]) {
+    streamingState[chatId] = { message, listeners: [] };
+  } else {
+    streamingState[chatId].message = message;
+  }
+}
+
+export function getStreamingMessage(chatId: string) {
+  return streamingState[chatId]?.message;
+}
+
+export function removeStreamingMessage(chatId: string) {
+  delete streamingState[chatId];
+}
+
+export function addStreamingMessageListener(chatId: string, listener: (content: string, done: boolean) => void) {
+  if (!streamingState[chatId]) {
+    streamingState[chatId] = { message: { id: chatId, role: 'assistant', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: 'generating' }, listeners: [listener] };
+  } else {
+    streamingState[chatId].listeners.push(listener);
+  }
+}
+
+export function removeStreamingMessageListeners(chatId: string) {
+  if (streamingState[chatId]) {
+    streamingState[chatId].listeners = [];
+  }
+}
+
+export function triggerStreamingMessageListeners(chatId: string, content: string, done = false) {
+  if (streamingState[chatId]) {
+    for (const listener of streamingState[chatId].listeners) {
+      listener(content, done);
+    }
+    if (done) {
+      removeStreamingMessage(chatId); // Clear state when done
+    }
+  }
 }

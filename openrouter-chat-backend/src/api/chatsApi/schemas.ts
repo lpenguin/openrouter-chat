@@ -48,6 +48,7 @@ export const MessageDtoSchema = z.object({
     startIndex: z.number().optional(),
     endIndex: z.number().optional(),
   })).optional(),
+  status: z.enum(['generating', 'complete']).nullable().optional(),
 });
 
 export type MessageDto = z.infer<typeof MessageDtoSchema>;

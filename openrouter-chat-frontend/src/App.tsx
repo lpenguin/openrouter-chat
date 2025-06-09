@@ -35,7 +35,6 @@ function ChatRouteSync(props: { sidebarVisible: boolean; toggleSidebar: () => vo
   const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
   const currentChatId = useChatStore((state) => state.currentChatId);
   const prevChatId = useRef<string | null>(null);
-  console.log('ChatRouteSync', { chatId: urlChatId, currentChatId, prevChatId: prevChatId.current });
   
   useEffect(() => {
     if (urlChatId !== undefined && !currentChatId && prevChatId.current === null) {

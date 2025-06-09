@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { z } from 'zod';
+import { Readable } from 'stream';
 
 export type ChatMessage = {
   role: 'user' | 'assistant';
@@ -49,6 +50,9 @@ export type OpenRouterResponseMessage = z.infer<typeof OpenRouterResponseMessage
 export type OpenRouterRequestMessage = z.infer<typeof OpenRouterRequestMessageSchema>;
 export type OpenRouterAnnotations = z.infer<typeof OpenRouterAnnotationsSchema>;
 
+// OpenRouter API endpoint
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
 // Helper to convert DB annotation to OpenRouter annotation (validates with Zod)
 export function dbAnnotationToOpenRouterAnnotation(annotation: unknown): any {
   const p = OpenRouterAnnotationsSchema.safeParse(annotation);
@@ -68,7 +72,132 @@ export const OpenRouterResponseSchema = z.object({
 
 export type OpenRouterResponse = z.infer<typeof OpenRouterResponseSchema>;
 
-export async function getOpenRouterCompletionWithAttachments({
+// Helper function to build the common payload for OpenRouter API
+function buildOpenRouterPayload({
+  messages,
+  model,
+  useWebSearch = false,
+  webSearchOptions,
+  stream = false,
+}: {
+  messages: OpenRouterRequestMessage[];
+  model: string;
+  useWebSearch?: boolean;
+  webSearchOptions?: { search_context_size?: 'low' | 'medium' | 'high' };
+  stream?: boolean;
+}): any {
+  const payload: any = {
+    model,
+    messages,
+    plugins: [
+      {
+        id: 'file-parser',
+        pdf: { engine: 'mistral-ocr' },
+      },
+    ],
+  };
+  
+  if (useWebSearch) {
+    payload.plugins.push({ id: 'web' });
+    if (webSearchOptions) {
+      payload.web_search_options = webSearchOptions;
+    }
+  }
+
+  if (stream) {
+    payload.stream = true;
+  }
+
+  return payload;
+}
+
+// Helper function to build common headers for OpenRouter API
+function buildOpenRouterHeaders(apiKey: string, isStreaming: boolean = false): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
+
+  if (isStreaming) {
+    headers['Accept'] = 'text/event-stream';
+  }
+
+  return headers;
+}
+
+export async function getOpenRouterCompletion({
+  messages,
+  model,
+  apiKey,
+  useWebSearch = false,
+  webSearchOptions,
+  onDelta,
+}: {
+  messages: OpenRouterRequestMessage[];
+  model: string;
+  apiKey: string;
+  useWebSearch?: boolean;
+  webSearchOptions?: { search_context_size?: 'low' | 'medium' | 'high' };
+  onDelta: (delta: string, done: boolean) => void;
+}): Promise<void> {
+  const payload = buildOpenRouterPayload({
+    messages,
+    model,
+    useWebSearch,
+    webSearchOptions,
+    stream: true,
+  });
+
+  const headers = buildOpenRouterHeaders(apiKey, true);
+
+  const response = await axios.post(OPENROUTER_API_URL, payload, {
+    headers,
+    responseType: 'stream',
+  });
+  return new Promise<void>((resolve, reject) => {
+    let done = false;
+    let buffer = '';
+    const stream = response.data as Readable;
+    stream.on('data', (chunk: Buffer) => {
+      buffer += chunk.toString();
+
+      let idx;
+      while ((idx = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, idx).trim();
+        buffer = buffer.slice(idx + 1);
+        if (line.startsWith('data:')) {
+          const data = line.slice(5).trim();
+          if (data === '[DONE]') {
+            done = true;
+            onDelta('', true);
+            resolve();
+            return;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed.choices?.[0]?.delta?.content || '';
+            if (delta) {
+              onDelta(delta, false);
+            }
+          } catch (e) {
+            // ignore parse errors
+          }
+        }
+      }
+    });
+    stream.on('end', () => {
+      if (!done) {
+        onDelta('', true);
+        resolve();
+      }
+    });
+    stream.on('error', (err: any) => {
+      reject(err);
+    });
+  });
+}
+
+export async function getOpenRouterCompletionNonStreaming({
   messages,
   model,
   apiKey,
@@ -80,60 +209,34 @@ export async function getOpenRouterCompletionWithAttachments({
   apiKey: string;
   useWebSearch?: boolean;
   webSearchOptions?: { search_context_size?: 'low' | 'medium' | 'high' };
-}): Promise<OpenRouterResponseMessage> {
-  const payload: any = {
-    model,
+}): Promise<string> {
+  const payload = buildOpenRouterPayload({
     messages,
-    plugins: [
-      {
-        id: 'file-parser',
-        pdf: { engine: 'mistral-ocr' },
-      },
-    ],
-  };
-  if (useWebSearch) {
-    // Standard OpenRouter web search plugin
-    payload.plugins.push({ id: 'web' });
-    if (webSearchOptions) {
-      payload.web_search_options = webSearchOptions;
-    }
+    model,
+    useWebSearch,
+    webSearchOptions,
+    stream: false,
+  });
+
+  const headers = buildOpenRouterHeaders(apiKey, false);
+
+  const response = await axios.post(OPENROUTER_API_URL, payload, {
+    headers,
+  });
+
+  const parsedResponse = OpenRouterResponseSchema.safeParse(response.data);
+  if (!parsedResponse.success) {
+    throw new Error('Invalid response format from OpenRouter');
   }
-  try {
-    const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
-      payload,
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    // Validate response with Zod
-    const parsed = OpenRouterResponseSchema.safeParse(response.data);
-    if (!parsed.success) {
-      throw new Error('Invalid OpenRouter response: ' + parsed.error.message);
-    }
-    const choice = parsed.data.choices?.[0];
-    if (choice?.error) {
-      throw new Error(`OpenRouter error: ${choice.error.message}`);
-    }
-    if (!choice?.message) throw new Error('No assistant message in response');
-    return choice?.message;
-  } catch (error: unknown) {
-    // Detailed error logging
-    if (error && typeof error === 'object' && 'isAxiosError' in error && (error as any).isAxiosError) {
-      const err = error as any;
-      let msg = err.response?.data?.error || err.message || 'OpenRouter API error';
-      if (typeof msg === 'object') {
-        msg = JSON.stringify(msg);
-      }
-      // Log the full OpenRouter error response for debugging
-      console.error('OpenRouter API error:', err.response?.data || err);
-      throw new Error(`OpenRouter error: ${msg}`);
-    }
-    // Log unknown errors
-    console.error('Unknown error calling OpenRouter:', error);
-    throw new Error('Unknown error calling OpenRouter');
+
+  const choice = parsedResponse.data.choices?.[0];
+  if (choice?.error) {
+    throw new Error(`OpenRouter API error: ${choice.error.message}`);
   }
+
+  if (!choice?.message?.content) {
+    throw new Error('No content in OpenRouter response');
+  }
+
+  return choice.message.content;
 }

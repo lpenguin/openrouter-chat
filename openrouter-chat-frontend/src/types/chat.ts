@@ -18,6 +18,9 @@ interface BaseMessage {
   role: 'user' | 'assistant';
   content: string;
   attachments?: MessageAttachment[];
+  status?: 'generating' | 'complete' | null; // Streaming status
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface UserMessage extends BaseMessage {
@@ -27,6 +30,16 @@ export interface UserMessage extends BaseMessage {
 export interface AssistantMessage extends BaseMessage {
   role: 'assistant';
   model: string;
+  provider?: string;
+  searchAnnotations?: Array<{
+    url: string;
+    faviconUrl?: string;
+    citation?: string;
+    title?: string;
+    content?: string;
+    startIndex?: number;
+    endIndex?: number;
+  }>;
 }
 
 export type Message = UserMessage | AssistantMessage;

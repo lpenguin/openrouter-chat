@@ -237,6 +237,43 @@ export class HttpClient {
       throw error;
     }
   }
+
+  // Add a generic SSE streaming method to the HTTP client
+  streamSSE({
+    url,
+    onDelta,
+    onDone,
+    onError,
+  }: {
+    url: string;
+    onDelta: (delta: string) => void;
+    onDone: () => void;
+    onError: (err: any) => void;
+  }): EventSource {
+    // Build the full URL with auth token as query parameter since EventSource doesn't support custom headers
+    const fullUrl = `${API_BASE_URL}${url}`;
+    const urlWithAuth = this.token ? `${fullUrl}?token=${encodeURIComponent(this.token)}` : fullUrl;
+    
+    console.log(`Connecting to SSE stream at: ${urlWithAuth}`);
+    const es = new EventSource(urlWithAuth, { withCredentials: true });
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (typeof data.content === 'string') {
+          onDelta(data.content);
+        }
+      } catch {}
+    };
+    es.addEventListener('done', () => {
+      onDone();
+      es.close();
+    });
+    es.onerror = (e) => {
+      onError(e);
+      es.close();
+    };
+    return es;
+  }
 }
 
 // Global HTTP client instance
