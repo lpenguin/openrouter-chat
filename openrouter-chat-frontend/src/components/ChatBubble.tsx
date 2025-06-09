@@ -21,7 +21,7 @@ export interface AssistantMessageWithAnnotations extends AssistantMessage {
 
 export const UserChatBubble: React.FC<{ message: UserMessage }> = ({ message }) => (
   <div className="flex justify-end my-1">
-    <div className="bg-theme-surface rounded-lg p-2 max-w-xs border border-theme">
+    <div className="bg-theme-surface rounded-lg p-2 max-w-lg border border-theme overflow-x-auto">
       {message.attachments && message.attachments.length > 0 && (
         <div className="flex flex-col gap-1 mb-2 w-full">
           {message.attachments.map((attachment, index) => (
@@ -37,7 +37,7 @@ export const UserChatBubble: React.FC<{ message: UserMessage }> = ({ message }) 
 );
 
 export const AssistantChatBubble: React.FC<{ message: AssistantMessageWithAnnotations }> = ({ message }) => (
-  <div className="text-left text-[16px] w-full p-2">
+  <div className="text-left text-[16px] w-full p-2 overflow-x-auto">
     {message.attachments && message.attachments.length > 0 && (
       <div className="flex flex-wrap gap-2 mb-3">
         {message.attachments.map((attachment, index) => (

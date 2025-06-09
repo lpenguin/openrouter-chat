@@ -68,15 +68,19 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
       </div>
       <div className="relative overflow-visible">
         {isSvg && showPreview ? (
-          renderSvgPreview()
+          <div className="overflow-x-auto">
+            {renderSvgPreview()}
+          </div>
         ) : (
-          <SyntaxHighlighter
-            PreTag="div"
-            language={language}
-            style={theme}
-          >
-            {code}
-          </SyntaxHighlighter>
+          <div className="overflow-x-auto">
+            <SyntaxHighlighter
+              PreTag="div"
+              language={language}
+              style={theme}
+            >
+              {code}
+            </SyntaxHighlighter>
+          </div>
         )}
       </div>
     </div>
