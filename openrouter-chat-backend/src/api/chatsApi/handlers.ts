@@ -31,7 +31,8 @@ import {
   addStreamingMessage,
   removeStreamingMessage,
   triggerStreamingMessageListeners,
-  addStreamingMessageListener
+  addStreamingMessageListener,
+  generateChatName
 } from './helpers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -45,24 +46,7 @@ export const createChatHandler = async (req: Request, res: Response): Promise<vo
   const { model, chatNameContent } = parseResult.data;
   let chatName: string | undefined = undefined;
   if (chatNameContent) {
-    const settings = await getUserSettings(user.id);
-    const apiKey = settings?.operouter?.token;
-    if (!apiKey) {
-      throw new ApiError('No OpenRouter API key in user settings', 400);
-    }
-    try {
-      chatName = await getOpenRouterCompletionNonStreaming({
-        messages: [
-          { role: 'user', content: 'Suggest a short, descriptive chat title for this conversation:' },
-          { role: 'user', content: chatNameContent }
-        ],
-        model: model || 'gpt-3.5-turbo',
-        apiKey,
-      });
-      chatName = chatName.trim();
-    } catch (err) {
-      chatName = undefined;
-    }
+    chatName = await generateChatName({ chatNameContent, model, userId: user.id });
   }
   const chat = await createChat({ userId: user.id, model, name: chatName });
   res.json({ chat });

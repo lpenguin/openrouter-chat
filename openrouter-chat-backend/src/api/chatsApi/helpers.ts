@@ -6,6 +6,8 @@ import { getAttachmentsForMessage } from '../../services/chatService';
 import { dbAnnotationToOpenRouterAnnotation } from '../../services/openrouterService';
 import { OpenRouterAttachment, OpenRouterRequestMessage } from '../../services/openrouterService';
 import { uuid } from 'drizzle-orm/gel-core';
+import { getUserSettings } from '../../services/settingsService';
+import { getOpenRouterCompletionNonStreaming } from '../../services/openrouterService';
 
 // Global in-memory store for streaming assistant messages and listeners
 // Keyed by chatId
@@ -226,5 +228,27 @@ export function triggerStreamingMessageListeners(chatId: string, content: string
     if (done) {
       removeStreamingMessage(chatId); // Clear state when done
     }
+  }
+}
+
+// Helper to generate a chat name using OpenRouter completion
+export async function generateChatName({ chatNameContent, model, userId }: { chatNameContent: string, model?: string, userId: number }): Promise<string | undefined> {
+  const settings = await getUserSettings(userId);
+  const apiKey = settings?.operouter?.token;
+  if (!apiKey) {
+    throw new ApiError('No OpenRouter API key in user settings', 400);
+  }
+  try {
+    let chatName = await getOpenRouterCompletionNonStreaming({
+      messages: [
+        { role: 'user', content: 'Suggest a short, descriptive chat title for this conversation. Only return the title itself, with no quotes, markdown, or extra words:' },
+        { role: 'user', content: chatNameContent }
+      ],
+      model: model || 'gpt-3.5-turbo',
+      apiKey,
+    });
+    return chatName.trim();
+  } catch (err) {
+    return undefined;
   }
 }
