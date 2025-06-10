@@ -2,6 +2,8 @@ export interface Chat {
   id: string;
   name: string;
   model: string;
+  created_at?: string | Date; // Use snake_case for created_at
+  updated_at?: string | Date; // Use snake_case for updated_at
 }
 
 export interface MessageAttachment {

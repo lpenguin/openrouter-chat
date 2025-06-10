@@ -35,7 +35,8 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
     getChatById,
     setCurrentChatId,
     currentChatId,
-    addChat,    
+    addChat,
+    updateChatUpdatedAt,
   } = useChatStore();
   const { settings } = useSettingsStore();
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
@@ -206,6 +207,7 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
         attachments,
         useSearch,
       });
+      updateChatUpdatedAt(chatId, new Date());
 
       // Add a local echo of the assistant message with status 'generating' for streaming UI
       const assistantEcho = {

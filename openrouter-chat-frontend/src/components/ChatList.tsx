@@ -1,10 +1,50 @@
+import { useMemo, useCallback } from 'react';
+import dayjs from 'dayjs';
+import isToday from 'dayjs/plugin/isToday';
+import isYesterday from 'dayjs/plugin/isYesterday';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
 import { useErrorStore } from '../store/errorStore';
 import { DocumentTextIcon } from '@heroicons/react/20/solid';
-import { useCallback } from 'react';
 import * as chatService from '../services/chatService';
 import ChatListItem from './ChatListItem';
+import type { Chat } from '../types/chat';
+
+dayjs.extend(isToday);
+dayjs.extend(isYesterday);
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+
+function isThisWeek(date: dayjs.Dayjs): boolean {
+  const now = dayjs();
+  const startOfWeek = now.startOf('week').add(1, 'day');
+  const endOfWeek = startOfWeek.add(6, 'day');
+  return date.isSameOrAfter(startOfWeek, 'day') && date.isSameOrBefore(endOfWeek, 'day');
+}
+
+const groupChatsByDate = (chats: Chat[]): Record<string, Chat[]> => {
+  const groups: Record<string, Chat[]> = {
+    Today: [],
+    Yesterday: [],
+    'This Week': [],
+    Past: [],
+  };
+  for (const chat of chats) {
+    const date = dayjs(chat.updated_at || chat.created_at);
+    if (date.isToday()) {
+      groups.Today.push(chat);
+    } else if (date.isYesterday()) {
+      groups.Yesterday.push(chat);
+    } else if (isThisWeek(date)) {
+      groups['This Week'].push(chat);
+    } else {
+      groups.Past.push(chat);
+    }
+  }
+  return groups;
+};
 
 const ChatList = () => {
   const {
@@ -65,6 +105,16 @@ const ChatList = () => {
     setCurrentChatId(chatId);
   };
 
+  // Sort and group chats
+  const groupedChats = useMemo(() => {
+    const sorted = [...chats].sort((a, b) => {
+      const aDate = dayjs(a.updated_at || a.created_at);
+      const bDate = dayjs(b.updated_at || b.created_at);
+      return bDate.valueOf() - aDate.valueOf();
+    });
+    return groupChatsByDate(sorted);
+  }, [chats]);
+
   return (
     <div className="w-full max-w-xs mx-auto">
       {/* Remove old Chats title, now handled in Sidebar */}
@@ -79,22 +129,30 @@ const ChatList = () => {
         </button>
       </div>
       <ul className="space-y-1">
-        {chats.length === 0 && (
+        {Object.entries(groupedChats).every(([, arr]) => arr.length === 0) && (
           <li className="px-4 py-2 text-theme-secondary">No chats yet</li>
         )}
-        {chats.map((chat) => (
-          <ChatListItem
-            key={chat.id}
-            chatId={chat.id}
-            name={chat.name}
-            selected={chat.id === currentChatId}
-            onClick={handleChatClick}
-            onEdit={handleRename}
-            onDelete={handleDelete}
-            // Pass style props for restyling
-            className="w-full px-3 py-2 rounded bg-theme-surface-100 hover:bg-theme-surface-200 transition-colors duration-100 text-theme-primary text-sm font-medium cursor-pointer flex items-center min-h-[36px] h-9"
-          />
-        ))}
+        {Object.entries(groupedChats).map(([group, arr]) =>
+          arr.length > 0 ? (
+            <li key={group}>
+              <div className="py-1 text-xs font-semibold text-theme-secondary uppercase tracking-wider">{group}</div>
+              <ul className="space-y-1">
+                {arr.map((chat) => (
+                  <ChatListItem
+                    key={chat.id}
+                    chatId={chat.id}
+                    name={chat.name}
+                    selected={chat.id === currentChatId}
+                    onClick={handleChatClick}
+                    onEdit={handleRename}
+                    onDelete={handleDelete}
+                    className="w-full px-3 py-2 rounded bg-theme-surface-100 hover:bg-theme-surface-200 transition-colors duration-100 text-theme-primary text-sm font-medium cursor-pointer flex items-center min-h-[36px] h-9"
+                  />
+                ))}
+              </ul>
+            </li>
+          ) : null
+        )}
       </ul>
     </div>
   );

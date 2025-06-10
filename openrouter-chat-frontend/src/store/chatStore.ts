@@ -18,6 +18,7 @@ interface ChatState {
   replaceChat: (chatId: string, chat: Chat) => void;
   renameChat: (chatId: string, name: string) => void;
   deleteChat: (chatId: string) => void;
+  updateChatUpdatedAt: (chatId: string, updatedAt: string | Date) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -38,7 +39,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setCurrentChatId: (currentChatId) => set({ currentChatId }),
   setMessages: (messages) => set({ messages }),
   setLoading: (loading) => set({ loading }),
-  addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+  addMessage: (message) => set((state) => ({
+    messages: [...state.messages, message],
+  })),
+  updateChatUpdatedAt: (chatId: string, updatedAt: string | Date) => set((state) => ({
+    chats: state.chats.map((chat) =>
+      chat.id === chatId ? { ...chat, updated_at: updatedAt } : chat
+    ),
+  })),
   replaceChat: (chatId, chat) => set((state) => ({
     chats: state.chats.map((c) => (c.id === chatId ? chat : c)),
   })),
