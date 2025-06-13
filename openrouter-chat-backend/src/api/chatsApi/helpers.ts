@@ -14,6 +14,7 @@ import { getOpenRouterCompletionNonStreaming } from '../../services/openrouterSe
 interface StreamingMessageState {
   message: MessageDto;
   listeners: Array<(content: string, done: boolean) => void>;
+  abortController?: AbortController;
 }
 const streamingState: Record<string, StreamingMessageState> = {};
 
@@ -190,11 +191,12 @@ export function attachmentsToInsertArray(attachments: Attachment[] | undefined, 
 
 // Streaming messages handlers
 
-export function addStreamingMessage(chatId: string, message: MessageDto) {
+export function addStreamingMessage(chatId: string, message: MessageDto, abortController: AbortController) {
   if (!streamingState[chatId]) {
-    streamingState[chatId] = { message, listeners: [] };
+    streamingState[chatId] = { message, listeners: [], abortController };
   } else {
     streamingState[chatId].message = message;
+    streamingState[chatId].abortController = abortController;
   }
 }
 
@@ -251,4 +253,13 @@ export async function generateChatName({ chatNameContent, model, userId }: { cha
   } catch (err) {
     return undefined;
   }
+}
+
+// Helper function to stop/remove a streaming message for a given chatId
+export function stopStreamingMessage(chatId: string) {
+  const state = streamingState[chatId];
+  if (state && state.abortController) {
+    state.abortController.abort();
+  }
+  removeStreamingMessage(chatId);
 }

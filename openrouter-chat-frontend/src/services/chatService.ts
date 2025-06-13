@@ -2,6 +2,7 @@ import { ChatSchema, MessageSchema } from '../schemas/chatSchema';
 import { z } from 'zod';
 import { Chat, Message } from '../types/chat';
 import { httpClient, HttpError } from './httpClient';
+import { API_BASE_URL } from '../config/api';
 
 export async function createChat(token: string, model?: string, chatNameContent?: string): Promise<Chat> {
   httpClient.setAuthToken(token);
@@ -179,4 +180,24 @@ export function streamAssistantMessage({
   });
   // Do NOT clear the auth token here; leave it set for the duration of the stream
   return es;
+}
+
+export async function stopAssistantStream(chatId: string, token: string): Promise<void> {
+  httpClient.setAuthToken(token);
+  try {
+    await httpClient.post<{ success: boolean }>(`/chat/${chatId}/stop-stream`, {});
+  } catch (error) {
+    if (error instanceof HttpError) {
+      if (error.status === 401) {
+        throw new Error('Your session has expired. Please sign in again.');
+      }
+      if (error.status === 404) {
+        throw new Error('Chat not found or you do not have permission to access it.');
+      }
+      throw new Error(error.userMessage);
+    }
+    throw error;
+  } finally {
+    httpClient.clearAuthToken();
+  }
 }

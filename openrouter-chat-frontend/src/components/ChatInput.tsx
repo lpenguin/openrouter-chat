@@ -12,7 +12,9 @@ interface Attachment {
 
 interface ChatInputProps {
   onSend: (content: string, attachments?: { filename: string; mimetype: string; data: string }[], useSearch?: boolean) => void;
+  onStop?: () => void;
   sendDisabled?: boolean;
+  streaming?: boolean;
 }
 
 const ACCEPTED_TYPES = [
@@ -32,7 +34,7 @@ const ACCEPTED_TYPES = [
   'application/xml',
 ];
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStop, sendDisabled, streaming }) => {
   const [value, setValue] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -92,10 +94,26 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
     if (textareaRef.current) textareaRef.current.focus();
   };
 
+  const handleStop = () => {
+    if (onStop) {
+      onStop();
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (streaming) {
+      handleStop();
+    } else {
+      handleSend();
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!sendDisabled && (value.trim() || attachments.length > 0)) {
+      if (streaming) {
+        handleStop();
+      } else if (!sendDisabled && (value.trim() || attachments.length > 0)) {
         handleSend();
       }
     }
@@ -271,11 +289,15 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, sendDisabled }) => {
           </div>
           
           <button
-            className="bg-theme-primary hover:bg-theme-success text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow cursor-pointer"
-            onClick={handleSend}
-            disabled={sendDisabled || (!value.trim() && attachments.length === 0)}
+            className={`font-semibold px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 shadow cursor-pointer ${
+              streaming 
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-theme-primary hover:bg-theme-success text-white'
+            }`}
+            onClick={handleButtonClick}
+            disabled={streaming ? false : (sendDisabled || (!value.trim() && attachments.length === 0))}
           >
-            Send
+            {streaming ? 'Stop' : 'Send'}
           </button>
         </div>
         {dragActive && (

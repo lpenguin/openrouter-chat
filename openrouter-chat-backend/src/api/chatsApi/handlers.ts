@@ -32,7 +32,8 @@ import {
   removeStreamingMessage,
   triggerStreamingMessageListeners,
   addStreamingMessageListener,
-  generateChatName
+  generateChatName,
+  stopStreamingMessage
 } from './helpers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -124,7 +125,8 @@ export const postMessageHandler = async (req: Request, res: Response): Promise<v
     provider: 'openrouter',
     status: 'generating',
   };
-  addStreamingMessage(uuid, streamingAssistantMessage);
+  const abortController = new AbortController();
+  addStreamingMessage(uuid, streamingAssistantMessage, abortController);
 
   // Start OpenRouter completion in the background (streaming)
   (async () => {
@@ -140,7 +142,7 @@ export const postMessageHandler = async (req: Request, res: Response): Promise<v
 
           streamingAssistantMessage.content = content;
           streamingAssistantMessage.updatedAt = new Date().toISOString();
-          addStreamingMessage(uuid, streamingAssistantMessage);
+          
           triggerStreamingMessageListeners(uuid, content, done);
           if (done) {
             (async () => {
@@ -156,7 +158,8 @@ export const postMessageHandler = async (req: Request, res: Response): Promise<v
               removeStreamingMessage(uuid);
             })();
           }
-        }
+        },
+        signal: abortController.signal,
       });
     } catch (err) {
       removeStreamingMessage(uuid);
@@ -259,4 +262,16 @@ export const streamMessageHandler = async (req: Request, res: Response): Promise
   if (streamingMsg.content.length > 0) {
     sendChunk(streamingMsg.content, false);
   }
+};
+
+export const stopStreamingHandler = async (req: Request, res: Response): Promise<void> => {
+  // @ts-ignore
+  const user = req.user;
+  const { uuid } = req.params;
+  const chat = await getChatById(uuid);
+  if (!chat || chat.user_id !== user.id) {
+    throw new ApiError('Chat not found', 404);
+  }
+  stopStreamingMessage(uuid);
+  res.json({ success: true });
 };

@@ -277,6 +277,25 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
     eventSourceRef.current = es;
   };
 
+  // Add this function to handle stop streaming
+  const handleStopStreaming = async () => {
+    if (!currentChatId || !authUser?.token) return;
+    setLoading(false); // Immediately set loading to false when user stops streaming
+    try {
+      await chatService.stopAssistantStream(currentChatId, authUser.token);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      setStreaming(false);
+      streamingChatIdRef.current = null;
+      // Mark the current generating message as complete
+      updateLastAssistantMessage('', true);
+    } catch (e) {
+      addError({ message: e instanceof Error ? e.message : 'Failed to stop streaming' });
+    }
+  };
+
   // Clean up stream on chat change/unmount
   useEffect(() => {
     return () => {
@@ -331,7 +350,9 @@ export default function Chat({ sidebarVisible, onToggleSidebar, isMobile, onNewC
         <div className="flex-shrink-0 bg-gradient-to-t from-white via-white/80 to-transparent">
           <ChatInput
             onSend={handleSend}
+            onStop={handleStopStreaming}
             sendDisabled={loading || assistantMessageLoading}
+            streaming={streaming}
           />
         </div>
       </div>

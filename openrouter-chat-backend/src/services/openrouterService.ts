@@ -132,6 +132,7 @@ export async function getOpenRouterCompletion({
   useWebSearch = false,
   webSearchOptions,
   onDelta,
+  signal, // optional AbortSignal
 }: {
   messages: OpenRouterRequestMessage[];
   model: string;
@@ -139,6 +140,7 @@ export async function getOpenRouterCompletion({
   useWebSearch?: boolean;
   webSearchOptions?: { search_context_size?: 'low' | 'medium' | 'high' };
   onDelta: (delta: string, done: boolean) => void;
+  signal?: AbortSignal;
 }): Promise<void> {
   const payload = buildOpenRouterPayload({
     messages,
@@ -150,10 +152,26 @@ export async function getOpenRouterCompletion({
 
   const headers = buildOpenRouterHeaders(apiKey, true);
 
-  const response = await axios.post(OPENROUTER_API_URL, payload, {
-    headers,
-    responseType: 'stream',
-  });
+  let response;
+  let wasCanceled = false;
+  try {
+    response = await axios.post(OPENROUTER_API_URL, payload, {
+      headers,
+      responseType: 'stream',
+      signal, // pass abort signal
+    });
+  } catch (err: any) {
+    // If aborted, mark as canceled but continue to save partial content
+    if (err?.code === 'ERR_CANCELED' || err?.message === 'canceled') {
+      console.log('[OpenRouter] Request was canceled, saving partial content...');
+      wasCanceled = true;
+      // Call onDelta with done=true to save partial content
+      onDelta('', true);
+      return;
+    }
+    throw err;
+  }
+
   return new Promise<void>((resolve, reject) => {
     let done = false;
     let buffer = '';
@@ -192,8 +210,31 @@ export async function getOpenRouterCompletion({
       }
     });
     stream.on('error', (err: any) => {
+      // If aborted, ensure we save partial content before resolving
+      if (err?.code === 'ERR_CANCELED' || err?.message === 'canceled') {
+        console.log('[OpenRouter] Stream error due to cancellation, saving partial content...');
+        if (!done) {
+          onDelta('', true); // Save partial content
+        }
+        resolve();
+        return;
+      }
+      console.error('[OpenRouter] Stream error:', err);
       reject(err);
     });
+    // If the request is aborted, close the stream and save partial content
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        console.log('[OpenRouter] AbortSignal triggered, saving partial content and closing stream...');
+        try { 
+          stream.destroy(); 
+        } catch {}
+        if (!done) {
+          onDelta('', true); // Save partial content before resolving
+        }
+        resolve();
+      });
+    }
   });
 }
 
