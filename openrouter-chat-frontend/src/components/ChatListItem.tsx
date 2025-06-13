@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from '@heroicons/react/20/solid';
 
 interface ChatListItemProps {
@@ -78,22 +78,23 @@ export default function ChatListItem({
       ) : (
         <>
           <span className="flex-1 truncate">{name}</span>
-          <Menu as="div" className="chat-menu relative inline-block text-left ml-2">
-            <Menu.Button
+          <Menu as="div" className="chat-menu inline-block text-left ml-2">
+            <MenuButton
               className="p-1 rounded hover:bg-theme-surface focus:outline-none"
               onClick={e => e.stopPropagation()} // Prevent selecting chat
             >
               <EllipsisVerticalIcon className="w-5 h-5 text-theme-secondary" />
-            </Menu.Button>
-            <Menu.Items
+            </MenuButton>
+            <MenuItems
               // Popover to the right and bottom of the button
-              className="absolute left-full top-full ml-2 mt-0 w-36 origin-top-left rounded-md bg-theme-surface border border-theme shadow-lg focus:outline-none z-[9999]"
+              anchor="bottom start"
+              className="ml-2 mt-0 w-36 rounded-md bg-theme-surface border border-theme shadow-lg z-[9999]"
             >
               <div className="py-1">
-                <Menu.Item>
-                  {({ active }) => (
+                <MenuItem>
+                  {({ focus }) => (
                     <button
-                      className={`flex items-center w-full px-3 py-2 text-sm ${active ? 'bg-theme-background' : ''}`}
+                      className={`flex items-center w-full px-3 py-2 text-sm ${focus ? 'bg-theme-background' : ''}`}
                       onClick={e => {
                         e.stopPropagation();
                         setEditingId(chatId);
@@ -103,8 +104,8 @@ export default function ChatListItem({
                       <PencilIcon className="w-4 h-4 mr-2 text-theme-secondary" /> Rename
                     </button>
                   )}
-                </Menu.Item>
-                <Menu.Item>
+                </MenuItem>
+                <MenuItem>
                   {({ active }) => (
                     <button
                       className={`flex items-center w-full px-3 py-2 text-sm text-red-600 ${active ? 'bg-theme-background' : ''}`}
@@ -116,9 +117,9 @@ export default function ChatListItem({
                       <TrashIcon className="w-4 h-4 mr-2" /> Delete
                     </button>
                   )}
-                </Menu.Item>
+                </MenuItem>
               </div>
-            </Menu.Items>
+            </MenuItems>
           </Menu>
         </>
       )}
