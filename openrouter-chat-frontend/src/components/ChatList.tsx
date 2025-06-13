@@ -46,7 +46,11 @@ const groupChatsByDate = (chats: Chat[]): Record<string, Chat[]> => {
   return groups;
 };
 
-const ChatList = () => {
+interface ChatListProps {
+  className?: string;
+}
+
+const ChatList = ({ className = '' }: ChatListProps) => {
   const {
     chats,
     currentChatId,
@@ -116,19 +120,16 @@ const ChatList = () => {
   }, [chats]);
 
   return (
-    <div className="w-full max-w-xs mx-auto">
-      {/* Remove old Chats title, now handled in Sidebar */}
-      <div className="flex flex-col justify-between mb-4">
-        <button
-          className="flex items-center justify-between px-3 py-2 mt-5 bg-theme-primary text-white rounded-md hover:bg-theme-primary focus:outline-none w-full cursor-pointer"
-          onClick={handleNewChat}
-          disabled={!authUser}
-        >
-          <span>New Chat</span>
-          <DocumentTextIcon className="w-7 h-7 ml-2" />
-        </button>
-      </div>
-      <ul className="space-y-1">
+    <div className={`flex flex-col w-full max-w-xs mx-auto ${className}`}>
+      <button
+        className="flex items-center justify-between px-3 py-2 mb-4 bg-theme-primary text-white rounded-md hover:bg-theme-primary focus:outline-none w-full cursor-pointer"
+        onClick={handleNewChat}
+        disabled={!authUser}
+      >
+        <span>New Chat</span>
+        <DocumentTextIcon className="w-7 h-7 ml-2" />
+      </button>
+      <ul className="space-y-1 min-h-0 overflow-y-auto flex-1">
         {Object.entries(groupedChats).every(([, arr]) => arr.length === 0) && (
           <li className="px-4 py-2 text-theme-secondary">No chats yet</li>
         )}
