@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import dayjs from 'dayjs';
 import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
@@ -55,13 +55,12 @@ const ChatList = ({ className = '' }: ChatListProps) => {
     chats,
     currentChatId,
     setCurrentChatId,
-    setChats,
-    setLoading,
     renameChat: renameChatInStore,
     deleteChat: deleteChatInStore,
   } = useChatStore();
   const authUser = useAuthStore((state) => state.authUser);
   const { addError } = useErrorStore();
+  const [loading, setLoading] = useState(false);
 
   // Handler for new chat using chatService
   const handleNewChat = useCallback(async () => {
@@ -76,7 +75,7 @@ const ChatList = ({ className = '' }: ChatListProps) => {
     } finally {
       setLoading(false);
     }
-  }, [authUser, chats, setChats, setCurrentChatId, setLoading]);
+  }, [authUser, setCurrentChatId]);
 
   const handleRename = async (chatId: string, newName: string) => {
     if (!authUser) return;
