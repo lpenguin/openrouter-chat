@@ -42,6 +42,7 @@ function ChatRouteSync(props: { sidebarVisible: boolean; toggleSidebar: () => vo
     }
     prevChatId.current = currentChatId;
   }, [urlChatId, currentChatId, setCurrentChatId]);
+ 
   return (
     <Chat
       sidebarVisible={sidebarVisible}
@@ -55,8 +56,8 @@ function AppInner() {
   const authUser = useAuthStore((state) => state.authUser);
   const { setAuthUser } = useAuthStore();
   const { addError } = useErrorStore();
-  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
   const currentChatId = useChatStore((state) => state.currentChatId);
+  const prevChatIdRef = useRef<string | null>(null);
   const setChats = useChatStore((state) => state.setChats);
   const setLoading = useChatStore((state) => state.setLoading);
   const isMobile = useIsMobile();
@@ -89,7 +90,6 @@ function AppInner() {
       try {
         const chats = await chatService.getChats(authUser.token);
         setChats(chats);
-        setCurrentChatId(null);
       } catch (error) {
         addError({
           title: 'Failed to Load Chats',
@@ -99,20 +99,20 @@ function AppInner() {
         setLoading(false);
       }
     })();
-  }, [authUser, setChats, setLoading, setCurrentChatId, addError]);
-
-
+  }, [authUser, setChats, setLoading, addError]);
 
   // Update the route when currentChatId changes
   useEffect(() => {
-    // Only update if the route does not match the currentChatId
-    const path = window.location.pathname;
-    const expected = currentChatId ? `/${currentChatId}` : '/';
-    if (path !== expected) {
-      console.log('Navigating to', expected, 'from', path);
-      navigate(expected, { replace: true });
+    if (prevChatIdRef.current !== null || currentChatId !== null) {
+      const path = window.location.pathname;
+      const expected = currentChatId ? `/${currentChatId}` : '/';
+      if (path !== expected) {
+        navigate(expected, { replace: true });
+      }
     }
-  }, [currentChatId, navigate]);
+
+    prevChatIdRef.current = currentChatId;
+  }, [currentChatId, prevChatIdRef, navigate]);
 
   const toggleSidebar = () => {
     setSidebarVisible(prev => !prev);
